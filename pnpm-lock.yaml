@@ -63,7 +63,7 @@ importers:
         specifier: ^2.5.4
         version: 2.6.0
       zod:
-        specifier: ^3.23.8
+        specifier: ^3.25.76
         version: 3.25.76
     devDependencies:
       '@testing-library/react':
