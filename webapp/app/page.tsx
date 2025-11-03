@@ -40,12 +40,24 @@ export default async function HomePage() {
             Welcome, {session?.user?.name?.split(' ')[0]}! 👋
           </h2>
           <p className="mb-8 text-lg text-gray-600">
-            Your job application tracker is ready. Let's build the dashboard!
+            Your job application tracker is ready!
           </p>
-          <div className="space-y-2 text-sm text-gray-500">
-            <p>✅ Authentication working</p>
-            <p>✅ Database connected</p>
-            <p>⏳ Next: Applications API & List View</p>
+          <div className="space-y-4">
+            <a
+              href="/applications"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-white hover:bg-primary/90"
+            >
+              View Applications
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </a>
+            <div className="mt-6 space-y-2 text-sm text-gray-500">
+              <p>✅ Authentication working</p>
+              <p>✅ Database connected</p>
+              <p>✅ Applications API ready</p>
+              <p>✅ List View UI ready</p>
+            </div>
           </div>
         </div>
       </main>
