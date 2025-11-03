@@ -18,12 +18,18 @@
    - Basic layout and home page
    - Testing with Vitest configured
    - ESLint and Prettier setup
-4. **Git workflow:**
+4. **Database setup:** ✅ **NEW!**
+   - Drizzle ORM configured with Supabase
+   - 10 tables migrated successfully
+   - Schema includes: users, applications, contacts, reminders, email_events, attachments, stage_history, + NextAuth tables
+   - Connection pooling configured
+5. **Git workflow:**
    - Husky git hooks installed
    - Lint-staged for pre-commit checks
    - Branch naming conventions documented
    - Conventional commits setup
-5. **Documentation:**
+   - Feature branch: `feature/database-auth-setup` (active)
+6. **Documentation:**
    - Comprehensive PRD (1000+ lines, simplified for list view)
    - README with quick start
    - DEVELOPMENT.md with sprint plan
@@ -49,6 +55,8 @@ ApplicationPoint/
 2. ✅ Git is configured and pushing to GitHub
 3. ✅ All dependencies installed (474 packages)
 4. ✅ Tests can be run with `pnpm test`
+5. ✅ **Database is live in Supabase with 10 tables**
+6. ✅ Run `pnpm db:studio` to browse database visually
 
 ---
 
@@ -56,21 +64,20 @@ ApplicationPoint/
 
 ### Critical Path to Working MVP
 
-#### Sprint 1.1: Database & Auth (3-4 days)
-**Branch:** `feature/database-auth-setup`
+#### Sprint 1.1: Database & Auth (3-4 days) - IN PROGRESS ⚡
+**Branch:** `feature/database-auth-setup` (active)
 
 **Tasks:**
-1. Choose database: Supabase (recommended) or local PostgreSQL
-2. Set up Drizzle ORM
-3. Create schema:
-   ```typescript
-   // users, applications, contacts, email_events, reminders
-   ```
-4. Add NextAuth.js with Google OAuth
-5. Create login/signup pages
-6. Write auth tests
+1. ✅ ~~Choose database: Supabase~~
+2. ✅ ~~Set up Drizzle ORM~~
+3. ✅ ~~Create schema (10 tables created)~~
+4. ⏳ **NEXT:** Add NextAuth.js with Google OAuth
+5. ⏳ Create login/signup pages
+6. ⏳ Write auth tests
 
-**Estimated:** 1 day
+**Progress:** Database complete! Moving to authentication.
+**Time spent:** ~2 hours
+**Remaining:** ~4-6 hours for auth
 
 #### Sprint 1.2: Applications API (2 days)
 **Branch:** `feature/applications-api`
@@ -199,8 +206,8 @@ git push origin feature/your-feature
 - [x] Project structure
 - [x] Basic Next.js setup
 - [x] Git workflow
-- [ ] Database schema
-- [ ] Authentication
+- [x] Database schema ← **COMPLETED! (10 tables in Supabase)**
+- [ ] Authentication (NextAuth setup - IN PROGRESS)
 - [ ] Applications CRUD API
 - [ ] List view UI
 - [ ] Browser extension (basic)
@@ -216,11 +223,17 @@ git push origin feature/your-feature
 
 ---
 
-## 🚀 Let's Get Building!
+## 🚀 Next Up: Authentication with NextAuth
 
-**Ready to start?** Choose your database setup (I recommend Supabase for speed) and we'll create the first feature branch together.
+**Database is done!** ✅ Now we need to add user authentication.
 
-**Questions to answer now:**
-1. Do you have a Supabase account or want to use local PostgreSQL?
-2. Do you have Google OAuth credentials, or should we set those up?
-3. Should I start building the database schema on a feature branch?
+**Next steps:**
+1. Set up Google OAuth credentials (Google Cloud Console)
+2. Install and configure NextAuth.js
+3. Create login/signup pages
+4. Add authentication middleware
+5. Test the auth flow
+
+**Estimated time:** 4-6 hours
+
+**Ready to continue?** Let me know and I'll start setting up NextAuth!
