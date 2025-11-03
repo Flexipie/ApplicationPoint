@@ -100,21 +100,28 @@ ApplicationPoint/
 - PATCH /api/applications/[id]/status
 - GET /api/applications/stats
 
-#### Sprint 1.3: List View UI (2 days)
-**Branch:** `feature/applications-list-ui`
+#### Sprint 1.3: List View UI - COMPLETE! ✅
+**Branch:** `feature/applications-api` (includes API + UI)
 
 **Tasks:**
-1. Create applications list page with:
-   - Table/card layout
-   - Filter by status
-   - Search by company/title
-   - Sort options
-2. Status dropdown per row
-3. Inline detail expansion
-4. Loading states
-5. Mobile responsive
+1. ✅ Create applications list page with card layout
+2. ✅ Filter by status, source
+3. ✅ Search by company/title
+4. ✅ Status dropdown per row with color coding
+5. ✅ Inline detail expansion (click to expand)
+6. ✅ Loading and empty states
+7. ✅ Create application dialog (modal form)
+8. ✅ Delete functionality with confirmation
+9. ✅ Stats overview (counts by status)
 
-**Estimated:** 1-2 days
+**Status:** ✅ **COMPLETE** - Full-featured UI working!
+**Time spent:** ~2 hours
+**What works:**
+- Real-time data fetching and updates
+- Filtering, search, and sorting
+- Status changes with dropdown
+- Expandable cards showing details
+- Professional, responsive design
 
 #### Sprint 1.4: Browser Extension Basics (3 days)
 **Branch:** `feature/extension-basic-capture`
@@ -217,9 +224,9 @@ git push origin feature/your-feature
 - [x] Git workflow
 - [x] Database schema (10 tables in Supabase)
 - [x] Authentication (NextAuth + Google OAuth)
-- [x] Applications CRUD API ← **COMPLETED! (REST endpoints with validation)**
-- [ ] List view UI (NEXT UP)
-- [ ] Browser extension (basic)
+- [x] Applications CRUD API (REST endpoints with validation)
+- [x] List view UI ← **COMPLETED! (Filters, search, create, update, delete)**
+- [ ] Browser extension (basic) - **NEXT UP!**
 
 ### Success Criteria for Phase 1 Complete
 - ✅ User can sign up and log in
