@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, integer, boolean, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, integer, boolean, pgEnum, primaryKey } from 'drizzle-orm/pg-core';
 import { createId } from '@paralleldrive/cuid2';
 
 // Enums
@@ -216,10 +216,7 @@ export const accounts = pgTable('accounts', {
 
 // Sessions table (for NextAuth)
 export const sessions = pgTable('sessions', {
-  id: text('id')
-    .primaryKey()
-    .$defaultFn(() => createId()),
-  sessionToken: text('session_token').notNull().unique(),
+  sessionToken: text('session_token').primaryKey(),
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
@@ -227,11 +224,17 @@ export const sessions = pgTable('sessions', {
 });
 
 // Verification tokens (for NextAuth)
-export const verificationTokens = pgTable('verification_tokens', {
-  identifier: text('identifier').notNull(),
-  token: text('token').notNull().unique(),
-  expires: timestamp('expires', { mode: 'date' }).notNull(),
-});
+export const verificationTokens = pgTable(
+  'verification_tokens',
+  {
+    identifier: text('identifier').notNull(),
+    token: text('token').notNull(),
+    expires: timestamp('expires', { mode: 'date' }).notNull(),
+  },
+  (vt) => ({
+    compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
+  })
+);
 
 // Type exports for TypeScript
 export type User = typeof users.$inferSelect;
