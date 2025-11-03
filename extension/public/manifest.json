@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "ApplicationPoint - Job Tracker",
+  "version": "0.1.0",
+  "description": "Save job postings from LinkedIn and Indeed to your ApplicationPoint tracker",
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "https://*.linkedin.com/*",
+    "https://*.indeed.com/*"
+  ],
+  "action": {
+    "default_popup": "src/popup/index.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.linkedin.com/jobs/view/*",
+        "https://*.linkedin.com/jobs/collections/*"
+      ],
+      "js": ["content/index.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://*.indeed.com/viewjob*",
+        "https://*.indeed.com/rc/clk*"
+      ],
+      "js": ["content/index.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "background": {
+    "service_worker": "background/index.js",
+    "type": "module"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

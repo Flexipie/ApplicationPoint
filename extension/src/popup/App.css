@@ -1,0 +1,120 @@
+.popup {
+  padding: 0;
+  margin: 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header h1 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.content {
+  padding: 24px;
+}
+
+.content h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.content > p {
+  font-size: 14px;
+  line-height: 1.5;
+  opacity: 0.9;
+  margin: 0 0 20px 0;
+}
+
+.features {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.feature {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  opacity: 0.95;
+}
+
+.feature svg {
+  flex-shrink: 0;
+}
+
+.instructions {
+  margin: 20px 0;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.instructions h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+}
+
+.instructions ol {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.instructions li {
+  margin-bottom: 6px;
+}
+
+.primary-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: white;
+  color: #667eea;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 20px;
+}
+
+.primary-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.footer {
+  padding: 16px 24px;
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.7;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer p {
+  margin: 0;
+}
