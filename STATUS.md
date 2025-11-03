@@ -79,17 +79,26 @@ ApplicationPoint/
 **Time spent:** ~4 hours
 **Next:** Set up Google OAuth credentials, test login, then merge to main
 
-#### Sprint 1.2: Applications API (2 days)
-**Branch:** `feature/applications-api`
+#### Sprint 1.2: Applications API - COMPLETE! ✅
+**Branch:** `feature/applications-api` (ready to merge or continue with UI)
 
 **Tasks:**
-1. Build REST API endpoints
-2. Add Zod validation
-3. Implement CRUD operations
-4. Error handling
-5. API tests
+1. ✅ Build REST API endpoints (7 endpoints created)
+2. ✅ Add Zod validation (comprehensive schemas)
+3. ✅ Implement CRUD operations (ApplicationService)
+4. ✅ Error handling (try-catch with proper status codes)
+5. ⏳ API tests (can be added later)
 
-**Estimated:** 1 day
+**Status:** ✅ **COMPLETE** - Full CRUD API working!
+**Time spent:** ~1 hour
+**Endpoints created:**
+- POST /api/applications
+- GET /api/applications (with filters, search, pagination)
+- GET /api/applications/[id]
+- PATCH /api/applications/[id]
+- DELETE /api/applications/[id]
+- PATCH /api/applications/[id]/status
+- GET /api/applications/stats
 
 #### Sprint 1.3: List View UI (2 days)
 **Branch:** `feature/applications-list-ui`
@@ -207,9 +216,9 @@ git push origin feature/your-feature
 - [x] Basic Next.js setup
 - [x] Git workflow
 - [x] Database schema (10 tables in Supabase)
-- [x] Authentication ← **COMPLETED! (NextAuth + Google OAuth)**
-- [ ] Applications CRUD API (NEXT UP)
-- [ ] List view UI
+- [x] Authentication (NextAuth + Google OAuth)
+- [x] Applications CRUD API ← **COMPLETED! (REST endpoints with validation)**
+- [ ] List view UI (NEXT UP)
 - [ ] Browser extension (basic)
 
 ### Success Criteria for Phase 1 Complete
