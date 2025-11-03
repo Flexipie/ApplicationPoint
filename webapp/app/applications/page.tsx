@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { ApplicationsList } from '@/components/applications/applications-list';
+import { TestGmailButton } from '@/components/email/test-gmail-button';
 
 export default async function ApplicationsPage() {
   const session = await auth();
@@ -30,6 +31,11 @@ export default async function ApplicationsPage() {
 
       {/* Main Content */}
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        {/* Gmail Test - Remove this after Phase 2 is complete */}
+        <div className="mb-6">
+          <TestGmailButton />
+        </div>
+
         <ApplicationsList />
       </main>
     </div>
