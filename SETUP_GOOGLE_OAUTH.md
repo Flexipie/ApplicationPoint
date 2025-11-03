@@ -4,7 +4,7 @@ To enable Google Sign-In, you need to create OAuth credentials in Google Cloud C
 
 ## Step 1: Create a Google Cloud Project
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+1. Go to [Google Cloud Console](https://consoe.cloud.google.com/)
 2. Click "Select a project" → "NEW PROJECT"
 3. Name it "ApplicationPoint" (or your preference)
 4. Click "CREATE"
