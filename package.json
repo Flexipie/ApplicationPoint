@@ -1,0 +1,41 @@
+{
+  "name": "application-point",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Privacy-first job application tracker with browser extension and web app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Flexipie/ApplicationPoint.git"
+  },
+  "workspaces": [
+    "webapp",
+    "extension"
+  ],
+  "scripts": {
+    "dev": "pnpm --parallel --filter webapp --filter extension dev",
+    "build": "pnpm --filter webapp build && pnpm --filter extension build",
+    "test": "pnpm --recursive test",
+    "test:watch": "pnpm --recursive test:watch",
+    "test:coverage": "pnpm --recursive test:coverage",
+    "lint": "pnpm --recursive lint",
+    "type-check": "pnpm --recursive type-check",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}
