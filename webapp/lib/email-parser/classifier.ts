@@ -64,10 +64,22 @@ export class EmailClassifier {
 
   /**
    * Check if email should be excluded (not job-related)
+   * Only check subject line to avoid false positives from unsubscribe links in body
    */
   private static shouldExclude(subject: string, body: string): boolean {
-    const text = `${subject} ${body}`.toLowerCase();
-    return EXCLUDE_PATTERNS.some((pattern) => pattern.test(text));
+    // Only check subject for most patterns (body often has unsubscribe links)
+    const subjectLower = subject.toLowerCase();
+    
+    // Check subject-specific excludes
+    const subjectExcludes = [
+      /news.*newsletter/i,
+      /medium daily digest/i,
+      /github.*dependabot/i,
+      /weekly summary/i,
+      /daily digest/i,
+    ];
+    
+    return subjectExcludes.some((pattern) => pattern.test(subjectLower));
   }
 
   /**
