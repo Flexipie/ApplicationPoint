@@ -8,6 +8,7 @@ import { ArrowLeft } from 'lucide-react';
 import { ApplicationHeader } from '@/components/applications/application-header';
 import { ApplicationTimeline } from '@/components/applications/application-timeline';
 import { ApplicationNotes } from '@/components/applications/application-notes';
+import { AppLayout } from '@/components/layout/app-layout';
 
 interface ApplicationDetailPageProps {
   params: {
@@ -41,10 +42,10 @@ export default async function ApplicationDetailPage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <AppLayout>
       {/* Header */}
       <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           {/* Breadcrumb */}
           <div className="mb-4 flex items-center gap-2 text-sm">
             <Link
@@ -64,7 +65,7 @@ export default async function ApplicationDetailPage({
       </header>
 
       {/* Main Content */}
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Left Column - Details */}
           <div className="lg:col-span-2 space-y-6">
@@ -186,7 +187,7 @@ export default async function ApplicationDetailPage({
             </div>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </AppLayout>
   );
 }
