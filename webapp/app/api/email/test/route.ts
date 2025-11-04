@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { GmailClient } from '@/lib/gmail/client';
+import { EmailClassifier } from '@/lib/email-parser/classifier';
+import { DataExtractor } from '@/lib/email-parser/extractor';
 
 export const runtime = 'nodejs';
 
@@ -37,24 +39,66 @@ export async function GET(req: NextRequest) {
 
     console.log(`Found ${messages.length} messages`);
 
-    // Parse messages
+    // Parse and classify messages
     const parsedMessages = messages.map((message) => {
       const headers = GmailClient.parseHeaders(message);
       const body = GmailClient.getPlainTextBody(message);
-      const companyName = GmailClient.extractCompanyName(headers.from);
+      
+      // Classify email
+      const classification = EmailClassifier.classify(
+        headers.subject,
+        body,
+        headers.from
+      );
+
+      // Extract additional data
+      const companyName = EmailClassifier.extractCompany(
+        headers.subject,
+        body,
+        headers.from
+      );
+      
+      const jobTitle = EmailClassifier.extractJobTitle(
+        headers.subject,
+        body
+      );
+
+      const interviewDate = DataExtractor.extractInterviewDate(
+        headers.subject,
+        body
+      );
+
+      const isRemote = DataExtractor.isRemote(`${headers.subject} ${body}`);
 
       return {
         id: message.id,
         headers,
         bodyPreview: body.substring(0, 200),
-        companyName,
+        classification: {
+          type: classification.type,
+          confidence: classification.confidence,
+          matches: classification.matches.slice(0, 3), // Top 3 matches
+        },
+        extractedData: {
+          companyName,
+          jobTitle,
+          interviewDate,
+          isRemote,
+        },
       };
     });
+
+    // Filter out UNKNOWN types for cleaner display
+    const classifiedMessages = parsedMessages.filter(
+      (msg) => msg.classification.type !== 'unknown'
+    );
 
     return NextResponse.json({
       success: true,
       messagesFound: messages.length,
-      messages: parsedMessages,
+      classifiedMessages: classifiedMessages.length,
+      messages: classifiedMessages,
+      allMessages: parsedMessages, // Include all for debugging
     });
   } catch (error: any) {
     console.error('Error testing Gmail connection:', error);

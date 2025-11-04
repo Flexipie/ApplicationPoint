@@ -61,22 +61,59 @@ export function TestGmailButton() {
       {result && (
         <div className="mt-4 rounded-md bg-green-50 p-4">
           <p className="text-sm font-medium text-green-800">
-            ✅ Gmail Connected!
+            ✅ Gmail Connected & Classifier Working!
           </p>
           <p className="mt-1 text-sm text-green-700">
-            Found {result.messagesFound} job-related emails from the last 7 days
+            Found {result.messagesFound} emails, classified {result.classifiedMessages} job-related
           </p>
           
           {result.messages && result.messages.length > 0 && (
-            <div className="mt-3 space-y-2">
+            <div className="mt-3 space-y-3">
               <p className="text-xs font-medium uppercase text-green-800">
-                Recent Emails:
+                Classified Emails:
               </p>
               {result.messages.map((msg: any, i: number) => (
-                <div key={i} className="rounded border border-green-200 bg-white p-2 text-xs">
+                <div key={i} className="rounded border border-green-200 bg-white p-3 text-xs">
+                  {/* Email Type Badge */}
+                  <div className="mb-2 flex items-center gap-2">
+                    <span className={`inline-flex rounded px-2 py-1 text-xs font-semibold ${
+                      msg.classification.type === 'application_received' ? 'bg-blue-100 text-blue-800' :
+                      msg.classification.type === 'interview_scheduled' ? 'bg-purple-100 text-purple-800' :
+                      msg.classification.type === 'assessment_invitation' ? 'bg-yellow-100 text-yellow-800' :
+                      msg.classification.type === 'offer_extended' ? 'bg-green-100 text-green-800' :
+                      msg.classification.type === 'rejection' ? 'bg-red-100 text-red-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {msg.classification.type.replace(/_/g, ' ').toUpperCase()}
+                    </span>
+                    <span className="text-gray-500">
+                      {Math.round(msg.classification.confidence * 100)}% confident
+                    </span>
+                  </div>
+
+                  {/* Subject */}
                   <p className="font-medium text-gray-900">{msg.headers.subject}</p>
-                  <p className="text-gray-600">From: {msg.companyName || msg.headers.from}</p>
-                  <p className="mt-1 text-gray-500">{msg.bodyPreview}...</p>
+                  
+                  {/* Extracted Data */}
+                  {msg.extractedData && (
+                    <div className="mt-2 space-y-1 text-gray-600">
+                      {msg.extractedData.companyName && (
+                        <p>🏢 Company: <strong>{msg.extractedData.companyName}</strong></p>
+                      )}
+                      {msg.extractedData.jobTitle && (
+                        <p>💼 Role: {msg.extractedData.jobTitle}</p>
+                      )}
+                      {msg.extractedData.interviewDate && (
+                        <p>📅 Date: {new Date(msg.extractedData.interviewDate).toLocaleDateString()}</p>
+                      )}
+                      {msg.extractedData.isRemote && (
+                        <p>🏠 Remote</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Body Preview */}
+                  <p className="mt-2 text-gray-500">{msg.bodyPreview}...</p>
                 </div>
               ))}
             </div>
