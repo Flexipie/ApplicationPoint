@@ -1,0 +1,227 @@
+import { EmailType, ParsedEmail } from '../gmail/types';
+import {
+  EMAIL_PATTERNS,
+  EXCLUDE_PATTERNS,
+  COMPANY_PATTERNS,
+  JOB_TITLE_PATTERNS,
+} from './patterns';
+
+interface ClassificationScore {
+  type: EmailType;
+  score: number;
+  matchedPatterns: string[];
+}
+
+export class EmailClassifier {
+  /**
+   * Classify an email and return the type with confidence score
+   */
+  static classify(
+    subject: string,
+    body: string,
+    from: string
+  ): { type: EmailType; confidence: number; matches: string[] } {
+    // Check if email should be excluded (newsletter, digest, etc.)
+    const excluded = this.shouldExclude(subject, body);
+    if (excluded) {
+      console.log('❌ Email excluded:', subject.substring(0, 50));
+      return { type: EmailType.UNKNOWN, confidence: 0, matches: ['excluded'] };
+    }
+
+    const scores: ClassificationScore[] = [];
+
+    // Score each email type based on pattern matches
+    for (const pattern of EMAIL_PATTERNS) {
+      const score = this.scorePattern(pattern, subject, body, from);
+      if (score.score > 0) {
+        scores.push(score);
+      }
+    }
+
+    // Sort by score (highest first)
+    scores.sort((a, b) => b.score - a.score);
+
+    // Debug logging
+    console.log('📧 Classifying:', subject.substring(0, 60));
+    console.log('   Scores found:', scores.length);
+    if (scores.length > 0) {
+      console.log('   Best:', scores[0].type, 'score:', scores[0].score);
+    }
+
+    // If no matches, return UNKNOWN
+    if (scores.length === 0 || scores[0].score < 0.3) {
+      return { type: EmailType.UNKNOWN, confidence: 0, matches: [] };
+    }
+
+    // Return best match
+    const best = scores[0];
+    return {
+      type: best.type,
+      confidence: Math.min(best.score, 1.0), // Cap at 1.0
+      matches: best.matchedPatterns,
+    };
+  }
+
+  /**
+   * Check if email should be excluded (not job-related)
+   * Only check subject line to avoid false positives from unsubscribe links in body
+   */
+  private static shouldExclude(subject: string, body: string): boolean {
+    // Only check subject for most patterns (body often has unsubscribe links)
+    const subjectLower = subject.toLowerCase();
+    
+    // Check subject-specific excludes
+    const subjectExcludes = [
+      /news.*newsletter/i,
+      /medium daily digest/i,
+      /github.*dependabot/i,
+      /weekly summary/i,
+      /daily digest/i,
+    ];
+    
+    return subjectExcludes.some((pattern) => pattern.test(subjectLower));
+  }
+
+  /**
+   * Score a pattern against email content
+   */
+  private static scorePattern(
+    pattern: any,
+    subject: string,
+    body: string,
+    from: string
+  ): ClassificationScore {
+    let score = 0;
+    const matches: string[] = [];
+
+    // Check subject patterns
+    if (pattern.patterns.subject) {
+      for (const regex of pattern.patterns.subject) {
+        if (regex.test(subject)) {
+          score += pattern.weight * 0.6; // Subject matches are weighted heavily
+          matches.push(`subject: ${regex.source}`);
+        }
+      }
+    }
+
+    // Check body patterns
+    if (pattern.patterns.body) {
+      for (const regex of pattern.patterns.body) {
+        if (regex.test(body)) {
+          score += pattern.weight * 0.4; // Body matches are weighted less
+          matches.push(`body: ${regex.source}`);
+        }
+      }
+    }
+
+    // Check from patterns
+    if (pattern.patterns.from) {
+      for (const regex of pattern.patterns.from) {
+        if (regex.test(from)) {
+          score += pattern.weight * 0.3;
+          matches.push(`from: ${regex.source}`);
+        }
+      }
+    }
+
+    return {
+      type: pattern.type,
+      score,
+      matchedPatterns: matches,
+    };
+  }
+
+  /**
+   * Extract company name from email content
+   * Prioritize subject line patterns over sender domain
+   */
+  static extractCompany(subject: string, body: string, from: string): string | null {
+    // First, try to extract from subject line (most reliable)
+    for (const [key, pattern] of Object.entries(COMPANY_PATTERNS)) {
+      const match = subject.match(pattern);
+      if (match && match[2]) {
+        const company = match[2].trim();
+        // Filter out generic words
+        if (!['Job', 'Career', 'Team', 'Jobs'].includes(company)) {
+          return company;
+        }
+      }
+    }
+
+    // Then try body
+    for (const [key, pattern] of Object.entries(COMPANY_PATTERNS)) {
+      const match = body.match(pattern);
+      if (match && match[2]) {
+        const company = match[2].trim();
+        if (!['Job', 'Career', 'Team', 'Jobs'].includes(company)) {
+          return company;
+        }
+      }
+    }
+
+    // Last resort: extract from email domain
+    // But NOT for LinkedIn, Indeed, etc (job platforms)
+    const domainMatch = from.match(/@([^.]+)\./);
+    if (domainMatch) {
+      const domain = domainMatch[1].toLowerCase();
+      // Skip job platforms
+      if (!['linkedin', 'indeed', 'glassdoor', 'monster', 'ziprecruiter'].includes(domain)) {
+        return domain.charAt(0).toUpperCase() + domain.slice(1);
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Extract job title from email content
+   */
+  static extractJobTitle(subject: string, body: string): string | null {
+    const text = `${subject} ${body}`;
+
+    for (const pattern of JOB_TITLE_PATTERNS) {
+      const match = text.match(pattern);
+      if (match && match[1]) {
+        const title = match[1].trim();
+        // Filter out if it's too long or too short
+        if (title.length > 5 && title.length < 100) {
+          return title;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Parse email into structured data
+   */
+  static parse(
+    messageId: string,
+    from: string,
+    subject: string,
+    body: string,
+    date: Date
+  ): ParsedEmail {
+    // Classify email type
+    const classification = this.classify(subject, body, from);
+
+    // Extract data
+    const companyName = this.extractCompany(subject, body, from);
+    const jobTitle = this.extractJobTitle(subject, body);
+
+    return {
+      messageId,
+      from,
+      subject,
+      body: body.substring(0, 1000), // Limit body length
+      date,
+      type: classification.type,
+      confidence: classification.confidence,
+      companyName,
+      extractedData: {
+        jobTitle: jobTitle || undefined,
+      },
+    };
+  }
+}
