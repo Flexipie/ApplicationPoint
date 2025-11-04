@@ -73,6 +73,26 @@ export function ApplicationsList() {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this application?')) return;
 
+    // Store old application for rollback
+    const oldApplication = applications.find((app) => app.id === id);
+    if (!oldApplication) return;
+
+    // Optimistic delete - remove from UI immediately
+    setApplications((prev) => prev.filter((app) => app.id !== id));
+
+    // Optimistically update stats
+    if (stats && oldApplication.currentStatus) {
+      setStats((prev: any) => ({
+        ...prev,
+        total: prev.total - 1,
+        byStatus: {
+          ...prev.byStatus,
+          [oldApplication.currentStatus]: (prev.byStatus[oldApplication.currentStatus] || 0) - 1,
+        },
+      }));
+    }
+
+    // Make API call in background
     try {
       const res = await fetch(`/api/applications/${id}`, {
         method: 'DELETE',
@@ -80,16 +100,57 @@ export function ApplicationsList() {
 
       if (!res.ok) throw new Error('Failed to delete');
 
-      // Refresh list
-      fetchApplications();
-      fetchStats();
+      // Success! No need to refresh - already updated
     } catch (error) {
       console.error('Error deleting application:', error);
+      
+      // Rollback on error - restore the application
+      setApplications((prev) => [...prev, oldApplication].sort((a, b) => 
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      ));
+
+      if (stats && oldApplication.currentStatus) {
+        setStats((prev: any) => ({
+          ...prev,
+          total: prev.total + 1,
+          byStatus: {
+            ...prev.byStatus,
+            [oldApplication.currentStatus]: (prev.byStatus[oldApplication.currentStatus] || 0) + 1,
+          },
+        }));
+      }
+
       alert('Failed to delete application');
     }
   };
 
   const handleStatusChange = async (id: string, newStatus: string) => {
+    // Store old application for rollback
+    const oldApplication = applications.find((app) => app.id === id);
+    if (!oldApplication) return;
+
+    const oldStatus = oldApplication.currentStatus;
+
+    // Optimistic update - update UI immediately
+    setApplications((prev) =>
+      prev.map((app) =>
+        app.id === id ? { ...app, currentStatus: newStatus } : app
+      )
+    );
+
+    // Optimistically update stats
+    if (stats) {
+      setStats((prev: any) => ({
+        ...prev,
+        byStatus: {
+          ...prev.byStatus,
+          [oldStatus]: (prev.byStatus[oldStatus] || 0) - 1,
+          [newStatus]: (prev.byStatus[newStatus] || 0) + 1,
+        },
+      }));
+    }
+
+    // Make API call in background
     try {
       const res = await fetch(`/api/applications/${id}/status`, {
         method: 'PATCH',
@@ -99,11 +160,28 @@ export function ApplicationsList() {
 
       if (!res.ok) throw new Error('Failed to update status');
 
-      // Refresh list
-      fetchApplications();
-      fetchStats();
+      // Success! No need to refresh - already updated
     } catch (error) {
       console.error('Error updating status:', error);
+      
+      // Rollback on error
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.id === id ? { ...app, currentStatus: oldStatus } : app
+        )
+      );
+
+      if (stats) {
+        setStats((prev: any) => ({
+          ...prev,
+          byStatus: {
+            ...prev.byStatus,
+            [oldStatus]: (prev.byStatus[oldStatus] || 0) + 1,
+            [newStatus]: (prev.byStatus[newStatus] || 0) - 1,
+          },
+        }));
+      }
+
       alert('Failed to update status');
     }
   };
