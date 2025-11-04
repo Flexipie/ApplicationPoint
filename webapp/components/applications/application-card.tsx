@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import Link from 'next/link';
 
 interface Application {
   id: string;
@@ -35,7 +35,6 @@ const statusColors: Record<string, string> = {
 const statuses = ['saved', 'applied', 'assessment', 'interview', 'offer', 'accepted', 'rejected'];
 
 export function ApplicationCard({ application, onDelete, onStatusChange }: ApplicationCardProps) {
-  const [expanded, setExpanded] = useState(false);
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return null;
@@ -52,9 +51,9 @@ export function ApplicationCard({ application, onDelete, onStatusChange }: Appli
       <div className="p-4">
         <div className="flex items-start justify-between gap-4">
           {/* Left: Company & Job Info */}
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="flex-1 text-left"
+          <Link
+            href={`/applications/${application.id}`}
+            className="flex-1 text-left hover:opacity-80"
           >
             <div className="flex items-start gap-3">
               <div className="flex-1">
@@ -69,7 +68,7 @@ export function ApplicationCard({ application, onDelete, onStatusChange }: Appli
                 )}
               </div>
             </div>
-          </button>
+          </Link>
 
           {/* Right: Status & Actions */}
           <div className="flex items-center gap-3">
@@ -128,30 +127,6 @@ export function ApplicationCard({ application, onDelete, onStatusChange }: Appli
           )}
         </div>
       </div>
-
-      {/* Expanded Details */}
-      {expanded && (
-        <div className="border-t border-gray-200 bg-gray-50 p-4">
-          <div className="space-y-3">
-            {application.deadlineDate && (
-              <div>
-                <span className="font-medium text-gray-700">Deadline: </span>
-                <span className="text-gray-600">{formatDate(application.deadlineDate)}</span>
-              </div>
-            )}
-            {application.notes && (
-              <div>
-                <span className="font-medium text-gray-700">Notes: </span>
-                <p className="mt-1 text-gray-600 whitespace-pre-wrap">{application.notes}</p>
-              </div>
-            )}
-            <div>
-              <span className="font-medium text-gray-700">Created: </span>
-              <span className="text-gray-600">{formatDate(application.createdAt)}</span>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
