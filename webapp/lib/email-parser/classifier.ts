@@ -22,8 +22,10 @@ export class EmailClassifier {
     from: string
   ): { type: EmailType; confidence: number; matches: string[] } {
     // Check if email should be excluded (newsletter, digest, etc.)
-    if (this.shouldExclude(subject, body)) {
-      return { type: EmailType.UNKNOWN, confidence: 0, matches: [] };
+    const excluded = this.shouldExclude(subject, body);
+    if (excluded) {
+      console.log('❌ Email excluded:', subject.substring(0, 50));
+      return { type: EmailType.UNKNOWN, confidence: 0, matches: ['excluded'] };
     }
 
     const scores: ClassificationScore[] = [];
@@ -38,6 +40,13 @@ export class EmailClassifier {
 
     // Sort by score (highest first)
     scores.sort((a, b) => b.score - a.score);
+
+    // Debug logging
+    console.log('📧 Classifying:', subject.substring(0, 60));
+    console.log('   Scores found:', scores.length);
+    if (scores.length > 0) {
+      console.log('   Best:', scores[0].type, 'score:', scores[0].score);
+    }
 
     // If no matches, return UNKNOWN
     if (scores.length === 0 || scores[0].score < 0.3) {
