@@ -133,24 +133,41 @@ export class EmailClassifier {
 
   /**
    * Extract company name from email content
+   * Prioritize subject line patterns over sender domain
    */
   static extractCompany(subject: string, body: string, from: string): string | null {
-    const text = `${subject} ${body}`;
-
-    // Try each company pattern
+    // First, try to extract from subject line (most reliable)
     for (const [key, pattern] of Object.entries(COMPANY_PATTERNS)) {
-      const match = text.match(pattern);
+      const match = subject.match(pattern);
       if (match && match[2]) {
-        return match[2].trim();
+        const company = match[2].trim();
+        // Filter out generic words
+        if (!['Job', 'Career', 'Team', 'Jobs'].includes(company)) {
+          return company;
+        }
       }
     }
 
-    // Fallback: extract from email domain
+    // Then try body
+    for (const [key, pattern] of Object.entries(COMPANY_PATTERNS)) {
+      const match = body.match(pattern);
+      if (match && match[2]) {
+        const company = match[2].trim();
+        if (!['Job', 'Career', 'Team', 'Jobs'].includes(company)) {
+          return company;
+        }
+      }
+    }
+
+    // Last resort: extract from email domain
+    // But NOT for LinkedIn, Indeed, etc (job platforms)
     const domainMatch = from.match(/@([^.]+)\./);
     if (domainMatch) {
-      const domain = domainMatch[1];
-      // Capitalize first letter
-      return domain.charAt(0).toUpperCase() + domain.slice(1);
+      const domain = domainMatch[1].toLowerCase();
+      // Skip job platforms
+      if (!['linkedin', 'indeed', 'glassdoor', 'monster', 'ziprecruiter'].includes(domain)) {
+        return domain.charAt(0).toUpperCase() + domain.slice(1);
+      }
     }
 
     return null;

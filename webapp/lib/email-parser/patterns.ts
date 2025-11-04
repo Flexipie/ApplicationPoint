@@ -202,6 +202,9 @@ export const EXCLUDE_PATTERNS = [
 
 // Extract company name patterns
 export const COMPANY_PATTERNS = {
+  // "Your application was sent to [Company]" (LinkedIn format)
+  sentTo: /(?:application|resume|cv) (was )?sent to ([A-Z][A-Za-z\s&.]+?)$/i,
+  
   // "Your application to [Company]"
   applicationTo: /application (to|at|for) ([A-Z][A-Za-z\s&.]+?)(?=\s*(?:was|has|for|in|$))/i,
   
