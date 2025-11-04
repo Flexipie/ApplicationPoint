@@ -64,7 +64,7 @@ export function TestGmailButton() {
             ✅ Gmail Connected & Classifier Working!
           </p>
           <p className="mt-1 text-sm text-green-700">
-            Found {result.messagesFound} emails, classified {result.classifiedMessages} job-related
+            Found {result.messagesFound} emails: {result.classifiedMessages} classified, {result.unknownMessages || 0} unknown
           </p>
           
           {result.messages && result.messages.length > 0 && (

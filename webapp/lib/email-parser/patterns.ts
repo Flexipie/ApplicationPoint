@@ -19,16 +19,23 @@ export const EMAIL_PATTERNS: EmailPattern[] = [
     patterns: {
       subject: [
         /application (was|has been)?\s*(received|submitted|sent)/i,
+        /your application was sent/i,
         /thank you for (your )?applying/i,
         /we('ve| have) received your application/i,
-        /your application (to|for)/i,
+        /your application (to|for|at)/i,
         /application confirmation/i,
+        /applied (to|for|at)/i,
       ],
       body: [
         /thank you for (your )?application/i,
         /we('ve| have) received your (application|resume|cv)/i,
-        /application (was|has been) (received|submitted)/i,
+        /application (was|has been) (received|submitted|sent)/i,
         /successfully (applied|submitted)/i,
+        /your application was sent/i,
+      ],
+      from: [
+        /jobs-noreply@linkedin/i,
+        /noreply.*jobs/i,
       ],
     },
   },
@@ -158,24 +165,39 @@ export const EMAIL_PATTERNS: EmailPattern[] = [
         /new job(s)? (for|match)/i,
         /recommended job/i,
         /jobs? you might (like|be interested)/i,
+        /top job picks/i,
+        /\d+ new jobs?/i,
+        /is hiring/i,
+        /apply now to/i,
+        /saved job/i,
+      ],
+      body: [
+        /job (alert|notification|recommendation)/i,
+        /view job/i,
+        /apply (now|here)/i,
       ],
       from: [
-        /jobalerts/i,
-        /job-listings/i,
+        /jobalerts.*@linkedin/i,
+        /job-listings.*@linkedin/i,
+        /jobs.*@linkedin/i,
+        /linkedin.*job/i,
         /careers/i,
+        /recruiting/i,
       ],
     },
   },
 ];
 
 // Keywords that indicate it's NOT a job application email
+// NOTE: These should be very specific to avoid filtering out real job emails
 export const EXCLUDE_PATTERNS = [
-  /newsletter/i,
-  /daily digest/i,
+  /news.*newsletter/i, // More specific than just "newsletter"
+  /medium daily digest/i, // Specific to Medium
+  /github.*dependabot/i, // GitHub notifications
   /weekly summary/i,
   /unsubscribe/i,
-  /marketing/i,
-  /promotional/i,
+  /marketing.*update/i,
+  /promotional.*offer/i,
 ];
 
 // Extract company name patterns

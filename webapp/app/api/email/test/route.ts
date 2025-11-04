@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    // Filter out UNKNOWN types for cleaner display
+    // Separate classified vs unknown
     const classifiedMessages = parsedMessages.filter(
       (msg) => msg.classification.type !== 'unknown'
     );
@@ -97,8 +97,9 @@ export async function GET(req: NextRequest) {
       success: true,
       messagesFound: messages.length,
       classifiedMessages: classifiedMessages.length,
-      messages: classifiedMessages,
-      allMessages: parsedMessages, // Include all for debugging
+      unknownMessages: parsedMessages.length - classifiedMessages.length,
+      messages: parsedMessages, // Show ALL for debugging (including unknown)
+      classified: classifiedMessages, // Just the classified ones
     });
   } catch (error: any) {
     console.error('Error testing Gmail connection:', error);
