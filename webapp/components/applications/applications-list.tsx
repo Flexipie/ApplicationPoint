@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { ApplicationCard } from './application-card';
 import { ApplicationFilters } from './application-filters';
 import { CreateApplicationDialog } from './create-application-dialog';
+import { ViewToggle } from './view-toggle';
+import { KanbanBoard } from './kanban-board';
 
 interface Application {
   id: string;
@@ -22,6 +24,7 @@ interface Application {
 export function ApplicationsList() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
+  const [view, setView] = useState<'list' | 'kanban'>('list');
   const [filters, setFilters] = useState({
     status: '',
     source: '',
@@ -124,13 +127,16 @@ export function ApplicationsList() {
         </div>
       )}
 
-      {/* Filters and Create Button */}
-      <div className="flex items-center justify-between gap-4">
+      {/* Filters, View Toggle, and Create Button */}
+      <div className="flex items-center justify-between gap-4 flex-wrap">
         <ApplicationFilters filters={filters} onChange={setFilters} />
-        <CreateApplicationDialog onSuccess={() => { fetchApplications(); fetchStats(); }} />
+        <div className="flex items-center gap-3">
+          <ViewToggle view={view} onViewChange={setView} />
+          <CreateApplicationDialog onSuccess={() => { fetchApplications(); fetchStats(); }} />
+        </div>
       </div>
 
-      {/* Applications List */}
+      {/* Applications View */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="text-gray-500">Loading applications...</div>
@@ -142,6 +148,12 @@ export function ApplicationsList() {
             Get started by creating your first application.
           </p>
         </div>
+      ) : view === 'kanban' ? (
+        <KanbanBoard
+          applications={applications}
+          onStatusChange={handleStatusChange}
+          onDelete={handleDelete}
+        />
       ) : (
         <div className="space-y-3">
           {applications.map((app) => (
