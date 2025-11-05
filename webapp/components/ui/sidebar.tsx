@@ -9,7 +9,7 @@ interface SidebarProps {
     name?: string | null;
     email?: string | null;
   };
-  onSignOut: () => void;
+  signOutAction: () => Promise<void>;
 }
 
 const navigation = [
@@ -17,7 +17,7 @@ const navigation = [
   { name: 'Applications', href: '/applications', icon: Briefcase },
 ];
 
-export function Sidebar({ user, onSignOut }: SidebarProps) {
+export function Sidebar({ user, signOutAction }: SidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -61,13 +61,15 @@ export function Sidebar({ user, onSignOut }: SidebarProps) {
           <p className="text-sm font-medium text-gray-900">{user.name}</p>
           <p className="text-xs text-gray-500 truncate">{user.email}</p>
         </div>
-        <button
-          onClick={onSignOut}
-          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
-        >
-          <LogOut className="h-4 w-4" />
-          Sign Out
-        </button>
+        <form action={signOutAction}>
+          <button
+            type="submit"
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </button>
+        </form>
       </div>
     </div>
   );

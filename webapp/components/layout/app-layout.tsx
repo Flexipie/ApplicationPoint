@@ -26,7 +26,7 @@ export async function AppLayout({ children }: AppLayoutProps) {
           name: session.user.name,
           email: session.user.email,
         }}
-        onSignOut={handleSignOut}
+        signOutAction={handleSignOut}
       />
       <div className="flex flex-1 flex-col overflow-hidden">
         <main className="flex-1 overflow-y-auto">
