@@ -109,8 +109,8 @@ async function saveJobToAPI(jobData: JobData) {
       // Get API URL from the response (background script includes it)
       const baseUrl = response.data.apiUrl || 'http://localhost:3000';
 
-      // Show success toast with link
-      showSuccessToast(response.data.application.id, baseUrl);
+      // Show success toast with link (API returns application directly, not wrapped)
+      showSuccessToast(response.data.id, baseUrl);
 
       // Update button to show already saved
       updateButtonToSaved();
