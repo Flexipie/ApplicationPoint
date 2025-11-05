@@ -2,10 +2,8 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { validateEnv } from '@/lib/env';
 
-// Validate environment variables at startup
-validateEnv();
+// Environment validation moved to middleware to avoid build-time errors
 
 const inter = Inter({ subsets: ['latin'] });
 
