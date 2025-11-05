@@ -3,13 +3,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Briefcase, LogOut } from 'lucide-react';
+import { signOut } from 'next-auth/react';
 
 interface SidebarProps {
   user: {
     name?: string | null;
     email?: string | null;
   };
-  signOutAction: () => Promise<void>;
 }
 
 const navigation = [
@@ -17,8 +17,12 @@ const navigation = [
   { name: 'Applications', href: '/applications', icon: Briefcase },
 ];
 
-export function Sidebar({ user, signOutAction }: SidebarProps) {
+export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
+
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: '/login' });
+  };
 
   return (
     <div className="flex h-screen w-64 flex-col border-r border-gray-200 bg-white">
@@ -61,15 +65,13 @@ export function Sidebar({ user, signOutAction }: SidebarProps) {
           <p className="text-sm font-medium text-gray-900">{user.name}</p>
           <p className="text-xs text-gray-500 truncate">{user.email}</p>
         </div>
-        <form action={signOutAction}>
-          <button
-            type="submit"
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
-          >
-            <LogOut className="h-4 w-4" />
-            Sign Out
-          </button>
-        </form>
+        <button
+          onClick={handleSignOut}
+          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+        >
+          <LogOut className="h-4 w-4" />
+          Sign Out
+        </button>
       </div>
     </div>
   );

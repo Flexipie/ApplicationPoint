@@ -14,11 +14,6 @@ export async function AppLayout({ children }: AppLayoutProps) {
     redirect('/login');
   }
 
-  const handleSignOut = async () => {
-    'use server';
-    await signOut({ redirectTo: '/login' });
-  };
-
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
       <Sidebar
@@ -26,7 +21,6 @@ export async function AppLayout({ children }: AppLayoutProps) {
           name: session.user.name,
           email: session.user.email,
         }}
-        signOutAction={handleSignOut}
       />
       <div className="flex flex-1 flex-col overflow-hidden">
         <main className="flex-1 overflow-y-auto">
