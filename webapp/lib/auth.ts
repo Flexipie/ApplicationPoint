@@ -3,6 +3,7 @@ import Google from 'next-auth/providers/google';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
 import { db } from '@/db';
 import { users, accounts, sessions, verificationTokens } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: DrizzleAdapter(db, {
@@ -30,6 +31,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     error: '/login',
   },
   callbacks: {
+    async signIn({ user, account }) {
+      // Automatically mark Gmail as connected when user signs in with Google
+      if (account?.provider === 'google' && user.id) {
+        await db
+          .update(users)
+          .set({
+            emailConnected: true,
+            lastEmailSync: new Date(),
+          })
+          .where(eq(users.id, user.id));
+      }
+      return true;
+    },
     async session({ session, user }) {
       if (session.user) {
         session.user.id = user.id;

@@ -44,7 +44,7 @@ export default async function SettingsPage() {
                 <p className="text-xs text-gray-500 mt-1">
                   {isGmailConnected
                     ? 'Connected - Emails are being processed daily'
-                    : 'Not connected - Sign in again to grant Gmail access'}
+                    : 'Disconnected - Sign out and sign back in to reconnect'}
                 </p>
               </div>
             </div>
@@ -72,12 +72,12 @@ export default async function SettingsPage() {
             {isGmailConnected ? (
               <DisconnectGmailButton userId={session.user.id} />
             ) : (
-              <a
-                href="/api/auth/signin"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Connect Gmail
-              </a>
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  Gmail access is granted automatically when you sign in with Google.
+                  If your Gmail connection was disconnected, please sign out and sign back in to reconnect.
+                </p>
+              </div>
             )}
           </div>
 
