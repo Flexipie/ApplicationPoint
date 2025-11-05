@@ -28,7 +28,7 @@ export function Sidebar({ user }: SidebarProps) {
   };
 
   return (
-    <div className="flex h-screen w-64 flex-col border-r border-gray-200 bg-white">
+    <div className="flex h-screen w-full flex-col border-r border-gray-200 bg-white">
       {/* Logo */}
       <div className="flex h-16 items-center border-b border-gray-200 px-6">
         <div className="flex items-center gap-2">

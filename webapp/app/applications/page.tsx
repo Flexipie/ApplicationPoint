@@ -1,8 +1,6 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { ApplicationsList } from '@/components/applications/applications-list';
-import { TestGmailButton } from '@/components/email/test-gmail-button';
-import { ProcessEmailsButton } from '@/components/email/process-emails-button';
 import { AppLayout } from '@/components/layout/app-layout';
 
 export default async function ApplicationsPage() {
@@ -28,12 +26,6 @@ export default async function ApplicationsPage() {
 
       {/* Main Content */}
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Email Integration Testing - Remove after Phase 2 */}
-        <div className="mb-6 space-y-4">
-          <TestGmailButton />
-          <ProcessEmailsButton />
-        </div>
-
         <ApplicationsList />
       </div>
     </AppLayout>

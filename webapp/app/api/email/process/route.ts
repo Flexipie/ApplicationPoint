@@ -4,6 +4,7 @@ import { GmailClient } from '@/lib/gmail/client';
 import { EmailClassifier } from '@/lib/email-parser/classifier';
 import { EmailProcessor } from '@/lib/services/email-processor';
 import { ParsedEmail } from '@/lib/gmail/types';
+import { rateLimit, apiRateLimiter } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 
@@ -11,6 +12,10 @@ export const runtime = 'nodejs';
  * POST /api/email/process - Process emails and update application statuses
  */
 export async function POST(req: NextRequest) {
+  // Rate limiting - email processing is expensive
+  const rateLimitResponse = await rateLimit(req, apiRateLimiter);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const session = await auth();
     if (!session?.user?.id) {

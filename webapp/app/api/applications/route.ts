@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { ApplicationService } from '@/lib/services/applications';
 import { createApplicationSchema, listApplicationsSchema } from '@/lib/validations/application';
 import { ZodError } from 'zod';
+import { rateLimit, readRateLimiter } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 
@@ -10,6 +11,10 @@ export const runtime = 'nodejs';
  * GET /api/applications - List all applications for authenticated user
  */
 export async function GET(req: NextRequest) {
+  // Rate limiting
+  const rateLimitResponse = await rateLimit(req, readRateLimiter);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -55,6 +60,10 @@ export async function GET(req: NextRequest) {
  * POST /api/applications - Create a new application
  */
 export async function POST(req: NextRequest) {
+  // Rate limiting
+  const rateLimitResponse = await rateLimit(req);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const session = await auth();
     if (!session?.user?.id) {

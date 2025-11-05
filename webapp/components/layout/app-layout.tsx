@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { redirect } from 'next/navigation';
-import { auth, signOut } from '@/lib/auth';
-import { Sidebar } from '@/components/ui/sidebar';
+import { auth } from '@/lib/auth';
+import { ResizableSidebar } from './resizable-sidebar';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -16,7 +16,7 @@ export async function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
-      <Sidebar
+      <ResizableSidebar
         user={{
           name: session.user.name,
           email: session.user.email,

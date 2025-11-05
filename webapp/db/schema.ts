@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, integer, boolean, pgEnum, primaryKey } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, integer, boolean, pgEnum, primaryKey, index } from 'drizzle-orm/pg-core';
 import { createId } from '@paralleldrive/cuid2';
 
 // Enums
@@ -43,7 +43,8 @@ export const users = pgTable('users', {
   digestTime: integer('digest_time').default(6), // 6 AM
   emailConnected: boolean('email_connected').default(false),
   calendarConnected: boolean('calendar_connected').default(false),
-  
+  lastEmailSync: timestamp('last_email_sync', { mode: 'date' }), // Last time emails were processed
+
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 });
@@ -56,7 +57,7 @@ export const applications = pgTable('applications', {
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
-  
+
   // Job details
   jobTitle: text('job_title').notNull(),
   companyName: text('company_name').notNull(),
@@ -64,27 +65,33 @@ export const applications = pgTable('applications', {
   salaryRange: text('salary_range'),
   applyUrl: text('apply_url'),
   descriptionPreview: text('description_preview'),
-  
+
   // Status and metadata
   currentStatus: applicationStatusEnum('current_status').default('saved').notNull(),
   source: applicationSourceEnum('source').default('other').notNull(),
-  
+
   // Dates
   deadlineDate: timestamp('deadline_date', { mode: 'date' }),
   nextActionText: text('next_action_text'),
   nextActionDate: timestamp('next_action_date', { mode: 'date' }),
-  
+
   // Duplicate tracking
   isDuplicate: boolean('is_duplicate').default(false),
   canonicalApplicationId: text('canonical_application_id'),
-  
+
   // Notes
   notes: text('notes'),
-  
+
   // Timestamps
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
-});
+}, (table) => ({
+  // Indexes for performance optimization
+  userIdIdx: index('applications_user_id_idx').on(table.userId),
+  statusIdx: index('applications_status_idx').on(table.currentStatus),
+  createdAtIdx: index('applications_created_at_idx').on(table.createdAt),
+  userStatusIdx: index('applications_user_status_idx').on(table.userId, table.currentStatus),
+}));
 
 // Stage history (track all status changes)
 export const stageHistory = pgTable('stage_history', {
