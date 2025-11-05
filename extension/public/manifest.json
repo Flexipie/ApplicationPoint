@@ -9,6 +9,7 @@
   ],
   "host_permissions": [
     "http://localhost:3000/*",
+    "https://*.vercel.app/*",
     "https://*.linkedin.com/*",
     "https://*.indeed.com/*"
   ],

@@ -3,18 +3,32 @@ import './App.css';
 
 export default function App() {
   const [apiUrl, setApiUrl] = useState('http://localhost:3000');
+  const [showSettings, setShowSettings] = useState(false);
+  const [tempUrl, setTempUrl] = useState('');
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     // Load saved API URL
     chrome.storage.local.get(['apiUrl'], (result) => {
       if (result.apiUrl) {
         setApiUrl(result.apiUrl);
+        setTempUrl(result.apiUrl);
+      } else {
+        setTempUrl('http://localhost:3000');
       }
     });
   }, []);
 
   const handleOpenApp = () => {
     chrome.tabs.create({ url: `${apiUrl}/applications` });
+  };
+
+  const handleSaveSettings = () => {
+    chrome.storage.local.set({ apiUrl: tempUrl }, () => {
+      setApiUrl(tempUrl);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    });
   };
 
   return (
@@ -27,14 +41,73 @@ export default function App() {
           </svg>
         </div>
         <h1>ApplicationPoint</h1>
+        <button
+          onClick={() => setShowSettings(!showSettings)}
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            marginLeft: 'auto',
+            padding: '4px'
+          }}
+          title="Settings"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M12 1v6m0 6v6m5.2-17.2l-4.2 4.2m0 6l-4.2 4.2M23 12h-6m-6 0H5m17.2-5.2l-4.2 4.2m0 6l-4.2 4.2"></path>
+          </svg>
+        </button>
       </div>
 
       {/* Main content */}
       <div className="content">
-        <h2>Quick Save Extension</h2>
-        <p>Save job postings from LinkedIn and Indeed with one click!</p>
+        {showSettings ? (
+          <div className="settings-panel">
+            <h2>Settings</h2>
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+                API URL
+              </label>
+              <input
+                type="text"
+                value={tempUrl}
+                onChange={(e) => setTempUrl(e.target.value)}
+                placeholder="https://your-app.vercel.app"
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '14px'
+                }}
+              />
+              <p style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                Enter your ApplicationPoint URL (e.g., https://your-app.vercel.app)
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button onClick={handleSaveSettings} className="primary-btn" style={{ flex: 1 }}>
+                {saved ? '✓ Saved!' : 'Save'}
+              </button>
+              <button onClick={() => setShowSettings(false)} style={{
+                flex: 1,
+                padding: '8px 16px',
+                background: '#f3f4f6',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontWeight: '500'
+              }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <h2>Quick Save Extension</h2>
+            <p>Save job postings from LinkedIn and Indeed with one click!</p>
 
-        <div className="features">
+            <div className="features">
           <div className="feature">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="20 6 9 17 4 12"></polyline>
@@ -72,11 +145,13 @@ export default function App() {
             <line x1="10" y1="14" x2="21" y2="3"></line>
           </svg>
         </button>
+          </>
+        )}
       </div>
 
       {/* Footer */}
       <div className="footer">
-        <p>Version 0.1.0</p>
+        <p>Version 0.1.0 {!showSettings && `• ${apiUrl.includes('localhost') ? 'Development' : 'Production'}`}</p>
       </div>
     </div>
   );
