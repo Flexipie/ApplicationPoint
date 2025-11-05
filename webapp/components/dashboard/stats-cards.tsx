@@ -1,6 +1,7 @@
 'use client';
 
 import { Briefcase, Send, FileCheck, Calendar, Gift, CheckCircle, XCircle } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface StatsCardsProps {
   stats: {
@@ -89,22 +90,21 @@ export function StatsCards({ stats }: StatsCardsProps) {
         const value = getValue(config.key);
 
         return (
-          <div
-            key={config.key}
-            className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-center justify-between">
-              <div className={`rounded-lg p-2 ${config.bgColor}`}>
-                <Icon className={`h-5 w-5 ${config.textColor}`} />
+          <Card key={config.key} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className={`rounded-lg p-2 ${config.bgColor}`}>
+                  <Icon className={`h-5 w-5 ${config.textColor}`} />
+                </div>
               </div>
-            </div>
-            <div className="mt-3">
-              <p className="text-2xl font-bold text-gray-900">{value}</p>
-              <p className="mt-1 text-sm font-medium text-gray-600">
-                {config.label}
-              </p>
-            </div>
-          </div>
+              <div className="mt-3">
+                <p className="text-2xl font-bold">{value}</p>
+                <p className="mt-1 text-sm font-medium text-muted-foreground">
+                  {config.label}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         );
       })}
     </div>

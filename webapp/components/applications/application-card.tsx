@@ -1,6 +1,16 @@
 'use client';
 
 import Link from 'next/link';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { MapPin, Calendar, Trash2, MoreVertical } from 'lucide-react';
 
 interface Application {
   id: string;
@@ -45,80 +55,79 @@ export function ApplicationCard({ application, onDelete, onStatusChange }: Appli
     });
   };
 
+  const statusVariant = {
+    saved: 'secondary',
+    applied: 'default',
+    assessment: 'outline',
+    interview: 'outline',
+    offer: 'default',
+    accepted: 'default',
+    rejected: 'destructive',
+  }[application.currentStatus] as 'default' | 'secondary' | 'outline' | 'destructive';
+
   return (
-    <div className="rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
-      {/* Main Card Content */}
-      <div className="p-4">
+    <Card className="transition-shadow hover:shadow-md">
+      <CardContent className="p-4">
         <div className="flex items-start justify-between gap-4">
-          {/* Left: Company & Job Info */}
           <Link
             href={`/applications/${application.id}`}
-            className="flex-1 text-left hover:opacity-80"
+            className="flex-1 min-w-0 hover:opacity-80"
           >
-            <div className="flex items-start gap-3">
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  {application.jobTitle}
-                </h3>
-                <p className="text-sm font-medium text-gray-600">
-                  {application.companyName}
-                </p>
-                {application.location && (
-                  <p className="mt-1 text-sm text-gray-500">{application.location}</p>
-                )}
+            <h3 className="text-lg font-semibold truncate">
+              {application.jobTitle}
+            </h3>
+            <p className="text-sm font-medium text-muted-foreground truncate">
+              {application.companyName}
+            </p>
+            {application.location && (
+              <div className="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
+                <MapPin className="h-3 w-3" />
+                <span className="truncate">{application.location}</span>
               </div>
-            </div>
+            )}
           </Link>
 
-          {/* Right: Status & Actions */}
-          <div className="flex items-center gap-3">
-            {/* Status Dropdown */}
-            <select
-              value={application.currentStatus}
-              onChange={(e) => onStatusChange(application.id, e.target.value)}
-              onClick={(e) => e.stopPropagation()}
-              className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-                statusColors[application.currentStatus]
-              } border-none cursor-pointer`}
-            >
-              {statuses.map((status) => (
-                <option key={status} value={status}>
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
-                </option>
-              ))}
-            </select>
-
-            {/* Delete Button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(application.id);
-              }}
-              className="rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-red-600"
-              title="Delete application"
-            >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                />
-              </svg>
-            </button>
+          <div className="flex items-center gap-2">
+            <Badge variant={statusVariant}>
+              {application.currentStatus.charAt(0).toUpperCase() + application.currentStatus.slice(1)}
+            </Badge>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {statuses.map((status) => (
+                  <DropdownMenuItem
+                    key={status}
+                    onClick={() => onStatusChange(application.id, status)}
+                  >
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuItem
+                  className="text-destructive"
+                  onClick={() => onDelete(application.id)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
-        {/* Meta Info */}
-        <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-gray-500">
-          <span className="capitalize">{application.source.replace('_', ' ')}</span>
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <Badge variant="outline" className="capitalize">
+            {application.source.replace('_', ' ')}
+          </Badge>
           <span>•</span>
-          <span>Updated {formatDate(application.updatedAt)}</span>
+          <div className="flex items-center gap-1">
+            <Calendar className="h-3 w-3" />
+            <span>{formatDate(application.updatedAt)}</span>
+          </div>
           {application.salaryRange && (
             <>
               <span>•</span>
@@ -126,7 +135,7 @@ export function ApplicationCard({ application, onDelete, onStatusChange }: Appli
             </>
           )}
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

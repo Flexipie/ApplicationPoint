@@ -9,6 +9,8 @@ import { StatsCards } from '@/components/dashboard/stats-cards';
 import { RecentActivity } from '@/components/dashboard/recent-activity';
 import { StatusChart } from '@/components/dashboard/status-chart';
 import { AppLayout } from '@/components/layout/app-layout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -85,13 +87,12 @@ export default async function DashboardPage() {
                 Welcome back, {session.user.name}
               </p>
             </div>
-            <Link
-              href="/applications"
-              className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-            >
-              <Plus className="h-4 w-4" />
-              New Application
-            </Link>
+            <Button asChild>
+              <Link href="/applications">
+                <Plus className="mr-2 h-4 w-4" />
+                New Application
+              </Link>
+            </Button>
           </div>
         </div>
       </header>
@@ -164,12 +165,12 @@ export default async function DashboardPage() {
               >
                 View Kanban Board
               </Link>
-              <button
-                onClick={() => window.location.href = '/api/email/process'}
+              <Link
+                href="/api/email/process"
                 className="flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-sm font-medium text-gray-700 hover:border-green-500 hover:bg-green-50 hover:text-green-700 transition-colors"
               >
                 Sync Emails
-              </button>
+              </Link>
             </div>
           </div>
 

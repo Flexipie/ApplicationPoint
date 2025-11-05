@@ -4,6 +4,9 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Briefcase, LogOut } from 'lucide-react';
 import { signOut } from 'next-auth/react';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
 
 interface SidebarProps {
   user: {
@@ -60,18 +63,27 @@ export function Sidebar({ user }: SidebarProps) {
       </nav>
 
       {/* User Section */}
-      <div className="border-t border-gray-200 p-4">
-        <div className="mb-3">
-          <p className="text-sm font-medium text-gray-900">{user.name}</p>
-          <p className="text-xs text-gray-500 truncate">{user.email}</p>
+      <div className="border-t p-4">
+        <div className="flex items-center gap-3 mb-3">
+          <Avatar className="h-9 w-9">
+            <AvatarFallback className="bg-gradient-to-br from-blue-600 to-purple-600 text-white">
+              {user.name?.charAt(0)?.toUpperCase() || 'U'}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">{user.name}</p>
+            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+          </div>
         </div>
-        <button
+        <Separator className="mb-3" />
+        <Button
+          variant="ghost"
+          className="w-full justify-start"
           onClick={handleSignOut}
-          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
         >
-          <LogOut className="h-4 w-4" />
+          <LogOut className="mr-2 h-4 w-4" />
           Sign Out
-        </button>
+        </Button>
       </div>
     </div>
   );
