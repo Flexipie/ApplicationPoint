@@ -8,6 +8,7 @@ import { EmailProcessor } from '@/lib/services/email-processor';
 import { ParsedEmail } from '@/lib/gmail/types';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/cron/process-emails - Automated email processing for all users

@@ -5,6 +5,7 @@ import { updateApplicationSchema } from '@/lib/validations/application';
 import { ZodError } from 'zod';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/applications/[id] - Get a single application

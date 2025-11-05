@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { ApplicationService } from '@/lib/services/applications';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/applications/stats - Get application statistics

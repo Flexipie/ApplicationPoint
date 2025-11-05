@@ -6,6 +6,7 @@ import { ZodError } from 'zod';
 import { rateLimit, readRateLimiter } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/applications - List all applications for authenticated user

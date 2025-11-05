@@ -7,6 +7,7 @@ import { ParsedEmail } from '@/lib/gmail/types';
 import { rateLimit, apiRateLimiter } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 /**
  * POST /api/email/process - Process emails and update application statuses

@@ -5,6 +5,7 @@ import { EmailClassifier } from '@/lib/email-parser/classifier';
 import { DataExtractor } from '@/lib/email-parser/extractor';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/email/test - Test Gmail connection and fetch recent emails
