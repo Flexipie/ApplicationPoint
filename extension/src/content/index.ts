@@ -99,10 +99,6 @@ async function handleSaveJob() {
 // Actually save the job to API
 async function saveJobToAPI(jobData: JobData) {
   try {
-    // Get API URL from storage
-    const { apiUrl } = await chrome.storage.local.get(['apiUrl']);
-    const baseUrl = apiUrl || 'http://localhost:3000';
-
     // Send to background script to save via API
     const response = await chrome.runtime.sendMessage({
       type: 'SAVE_JOB',
@@ -110,9 +106,12 @@ async function saveJobToAPI(jobData: JobData) {
     });
 
     if (response.success) {
+      // Get API URL from the response (background script includes it)
+      const baseUrl = response.data.apiUrl || 'http://localhost:3000';
+
       // Show success toast with link
       showSuccessToast(response.data.application.id, baseUrl);
-      
+
       // Update button to show already saved
       updateButtonToSaved();
     } else {

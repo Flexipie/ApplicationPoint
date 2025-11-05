@@ -50,7 +50,8 @@ async function handleSaveJob(jobData: any) {
     }
 
     const result = await response.json();
-    return result;
+    // Include the API URL in the response so content script can use it
+    return { ...result, apiUrl: baseUrl };
   } catch (error) {
     console.error('Error saving job:', error);
     throw error;
