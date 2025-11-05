@@ -20,7 +20,8 @@
     {
       "matches": [
         "https://*.linkedin.com/jobs/view/*",
-        "https://*.linkedin.com/jobs/collections/*"
+        "https://*.linkedin.com/jobs/collections/*",
+        "https://*.linkedin.com/jobs/search/*"
       ],
       "js": ["content/index.js"],
       "run_at": "document_idle"
