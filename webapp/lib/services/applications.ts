@@ -2,6 +2,7 @@ import { db } from '@/db';
 import { applications, stageHistory } from '@/db/schema';
 import { eq, and, or, like, desc, asc, sql } from 'drizzle-orm';
 import type { CreateApplicationInput, UpdateApplicationInput, ListApplicationsQuery } from '@/lib/validations/application';
+import { ReminderService } from './reminder-service';
 
 export class ApplicationService {
   /**
@@ -25,6 +26,29 @@ export class ApplicationService {
       toStatus: data.currentStatus || 'saved',
       trigger: 'manual',
     });
+
+    // Auto-create reminders based on initial status
+    const initialStatus = data.currentStatus || 'saved';
+    if (initialStatus === 'applied' || initialStatus === 'interview') {
+      await ReminderService.autoCreateReminders(
+        application.id,
+        userId,
+        initialStatus,
+        application.companyName,
+        application.jobTitle
+      );
+    }
+
+    // Create deadline reminder if deadline is set
+    if (data.deadlineDate) {
+      await ReminderService.createDeadlineReminder(
+        application.id,
+        userId,
+        new Date(data.deadlineDate),
+        application.companyName,
+        application.jobTitle
+      );
+    }
 
     return application;
   }
@@ -115,7 +139,7 @@ export class ApplicationService {
       throw new Error('Application not found');
     }
 
-    // If status is changing, create stage history
+    // If status is changing, create stage history and auto-reminders
     if (data.currentStatus && data.currentStatus !== existing.currentStatus) {
       await db.insert(stageHistory).values({
         applicationId,
@@ -123,6 +147,15 @@ export class ApplicationService {
         toStatus: data.currentStatus,
         trigger: 'manual',
       });
+
+      // Auto-create reminders based on status change
+      await ReminderService.autoCreateReminders(
+        applicationId,
+        userId,
+        data.currentStatus,
+        existing.companyName,
+        existing.jobTitle
+      );
     }
 
     const [updated] = await db
@@ -135,6 +168,17 @@ export class ApplicationService {
       })
       .where(eq(applications.id, applicationId))
       .returning();
+
+    // If deadline is being set or updated, create/update deadline reminder
+    if (data.deadlineDate && data.deadlineDate !== existing.deadlineDate) {
+      await ReminderService.createDeadlineReminder(
+        applicationId,
+        userId,
+        new Date(data.deadlineDate),
+        existing.companyName,
+        existing.jobTitle
+      );
+    }
 
     return updated;
   }
@@ -160,6 +204,17 @@ export class ApplicationService {
       toStatus: newStatus as any,
       trigger,
     });
+
+    // Auto-create reminders based on status change (only for non-reminder triggers to avoid loops)
+    if (trigger !== 'reminder') {
+      await ReminderService.autoCreateReminders(
+        applicationId,
+        userId,
+        newStatus,
+        existing.companyName,
+        existing.jobTitle
+      );
+    }
 
     const [updated] = await db
       .update(applications)
