@@ -1,6 +1,7 @@
 // Content script for ApplicationPoint extension
 import { parseLinkedInJob } from '../parsers/linkedin';
 import { parseIndeedJob } from '../parsers/indeed';
+import { parseGenericJob, looksLikeJobPage } from '../parsers/generic';
 import { createPreviewModal, type JobData } from './preview-modal';
 import { showSuccessToast, showErrorToast } from './success-toast';
 
@@ -9,6 +10,7 @@ console.log('ApplicationPoint content script loaded');
 // Detect which site we're on
 const isLinkedIn = window.location.hostname.includes('linkedin.com');
 const isIndeed = window.location.hostname.includes('indeed.com');
+const isGenericJobPage = !isLinkedIn && !isIndeed && looksLikeJobPage();
 
 // Create and inject the save button
 function createSaveButton() {
@@ -69,14 +71,25 @@ async function handleSaveJob() {
   try {
     // Parse job data based on site
     let jobData: JobData | null = null;
+
+    // Try site-specific parsers first
     if (isLinkedIn) {
       jobData = parseLinkedInJob();
+      console.log('LinkedIn parser result:', jobData);
     } else if (isIndeed) {
       jobData = parseIndeedJob();
+      console.log('Indeed parser result:', jobData);
+    }
+
+    // Fall back to generic parser if site-specific parser failed
+    if (!jobData) {
+      console.log('Site-specific parser failed, trying generic parser...');
+      jobData = parseGenericJob();
+      console.log('Generic parser result:', jobData);
     }
 
     if (!jobData) {
-      showErrorToast('Could not parse job data from this page');
+      showErrorToast('Could not parse job data from this page. Please try copying the details manually.');
       return;
     }
 
@@ -141,7 +154,12 @@ function updateButtonToSaved() {
 
 // Initialize: inject button when page is ready
 function init() {
-  if (isLinkedIn || isIndeed) {
+  // Check if we should show the button on this page
+  const shouldShowButton = isLinkedIn || isIndeed || isGenericJobPage;
+
+  if (shouldShowButton) {
+    console.log('ApplicationPoint: Detected job page, will inject save button');
+
     // Wait for page to be fully loaded
     if (document.readyState === 'complete') {
       createSaveButton();
@@ -155,9 +173,17 @@ function init() {
       const currentUrl = window.location.href;
       if (currentUrl !== lastUrl) {
         lastUrl = currentUrl;
-        setTimeout(createSaveButton, 1000); // Wait for page content to load
+        console.log('ApplicationPoint: URL changed, re-checking page...');
+
+        // Re-check if this is a job page after navigation
+        const isStillJobPage = isLinkedIn || isIndeed || looksLikeJobPage();
+        if (isStillJobPage) {
+          setTimeout(createSaveButton, 1000); // Wait for page content to load
+        }
       }
     }).observe(document.body, { subtree: true, childList: true });
+  } else {
+    console.log('ApplicationPoint: Not a job page, skipping button injection');
   }
 }
 

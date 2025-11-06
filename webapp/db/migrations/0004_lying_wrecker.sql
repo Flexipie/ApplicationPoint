@@ -1,0 +1,1 @@
+ALTER TYPE "application_source" ADD VALUE 'generic';

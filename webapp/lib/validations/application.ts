@@ -15,6 +15,7 @@ export const applicationStatusSchema = z.enum([
 export const applicationSourceSchema = z.enum([
   'linkedin',
   'indeed',
+  'generic',  // Fallback parser for unsupported sites
   'company_site',
   'referral',
   'other',

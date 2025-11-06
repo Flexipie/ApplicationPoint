@@ -15,6 +15,7 @@ export const applicationStatusEnum = pgEnum('application_status', [
 export const applicationSourceEnum = pgEnum('application_source', [
   'linkedin',
   'indeed',
+  'generic',  // Fallback parser for unsupported sites
   'company_site',
   'referral',
   'other',
