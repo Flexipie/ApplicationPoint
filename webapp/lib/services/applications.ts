@@ -170,7 +170,7 @@ export class ApplicationService {
       .returning();
 
     // If deadline is being set or updated, create/update deadline reminder
-    if (data.deadlineDate && data.deadlineDate !== existing.deadlineDate) {
+    if (data.deadlineDate && new Date(data.deadlineDate).getTime() !== existing.deadlineDate?.getTime()) {
       await ReminderService.createDeadlineReminder(
         applicationId,
         userId,

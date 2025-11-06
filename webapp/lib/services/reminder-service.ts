@@ -1,7 +1,9 @@
 import { db } from '@/db';
-import { reminders, type ReminderType } from '@/db/schema';
+import { reminders } from '@/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { createId } from '@paralleldrive/cuid2';
+
+type ReminderType = typeof reminders.$inferSelect.reminderType;
 
 export interface CreateReminderInput {
   applicationId: string;

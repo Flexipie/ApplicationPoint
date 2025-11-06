@@ -1,13 +1,14 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { db } from '@/db';
-import { applications } from '@/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { applications, reminders } from '@/db/schema';
+import { eq, desc, and } from 'drizzle-orm';
 import Link from 'next/link';
 import { Plus, ArrowRight } from 'lucide-react';
 import { StatsCards } from '@/components/dashboard/stats-cards';
 import { RecentActivity } from '@/components/dashboard/recent-activity';
 import { StatusChart } from '@/components/dashboard/status-chart';
+import { UpcomingReminders } from '@/components/dashboard/upcoming-reminders';
 import { AppLayout } from '@/components/layout/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +27,13 @@ export default async function DashboardPage() {
     .where(eq(applications.userId, session.user.id!))
     .orderBy(desc(applications.updatedAt));
 
+  // Fetch upcoming reminders for the user
+  const userReminders = await db
+    .select()
+    .from(reminders)
+    .where(eq(reminders.userId, session.user.id!))
+    .orderBy(reminders.dueDate);
+
   // Convert dates to strings for client components
   const applicationsWithStringDates = userApplications.map((app) => ({
     ...app,
@@ -33,6 +41,13 @@ export default async function DashboardPage() {
     updatedAt: app.updatedAt.toISOString(),
     deadlineDate: app.deadlineDate?.toISOString() || null,
     nextActionDate: app.nextActionDate?.toISOString() || null,
+  }));
+
+  const remindersWithStringDates = userReminders.map((reminder) => ({
+    ...reminder,
+    dueDate: reminder.dueDate.toISOString(),
+    createdAt: reminder.createdAt.toISOString(),
+    completedAt: reminder.completedAt?.toISOString() || null,
   }));
 
   // Calculate stats
@@ -147,6 +162,9 @@ export default async function DashboardPage() {
             <StatusChart stats={stats} />
             <RecentActivity applications={applicationsWithStringDates} />
           </div>
+
+          {/* Upcoming Reminders */}
+          <UpcomingReminders reminders={remindersWithStringDates} />
 
           {/* Quick Actions */}
           <div className="rounded-lg border border-gray-200 bg-white p-6">

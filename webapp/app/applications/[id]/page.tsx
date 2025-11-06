@@ -1,13 +1,15 @@
 import { auth } from '@/lib/auth';
 import { redirect, notFound } from 'next/navigation';
 import { db } from '@/db';
-import { applications } from '@/db/schema';
+import { applications, reminders } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { ApplicationHeader } from '@/components/applications/application-header';
 import { ApplicationTimeline } from '@/components/applications/application-timeline';
 import { ApplicationNotes } from '@/components/applications/application-notes';
+import { ReminderList } from '@/components/reminders/reminder-list';
+import { CreateReminderDialog } from '@/components/reminders/create-reminder-dialog';
 import { AppLayout } from '@/components/layout/app-layout';
 
 interface ApplicationDetailPageProps {
@@ -40,6 +42,13 @@ export default async function ApplicationDetailPage({
   if (application.userId !== session.user.id) {
     notFound();
   }
+
+  // Fetch reminders for this application
+  const applicationReminders = await db
+    .select()
+    .from(reminders)
+    .where(eq(reminders.applicationId, params.id))
+    .orderBy(reminders.dueDate);
 
   return (
     <AppLayout>
@@ -135,6 +144,21 @@ export default async function ApplicationDetailPage({
             {/* Notes Section */}
             <ApplicationNotes application={application} />
 
+            {/* Reminders Section */}
+            <div className="rounded-lg border border-gray-200 bg-white p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Reminders
+              </h2>
+              <ReminderList
+                reminders={applicationReminders.map((r) => ({
+                  ...r,
+                  dueDate: r.dueDate.toISOString(),
+                }))}
+                showCompleted={true}
+                onCreateClick={() => {}}
+              />
+            </div>
+
             {/* Timeline */}
             <ApplicationTimeline applicationId={application.id} />
           </div>
@@ -177,9 +201,14 @@ export default async function ApplicationDetailPage({
                     View Job Posting
                   </a>
                 )}
-                <button className="block w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-center text-sm font-medium text-gray-700 hover:bg-gray-50">
-                  Add Reminder
-                </button>
+                <CreateReminderDialog
+                  applicationId={application.id}
+                  trigger={
+                    <button className="block w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-center text-sm font-medium text-gray-700 hover:bg-gray-50">
+                      Add Reminder
+                    </button>
+                  }
+                />
                 <button className="block w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-center text-sm font-medium text-gray-700 hover:bg-gray-50">
                   Archive
                 </button>
