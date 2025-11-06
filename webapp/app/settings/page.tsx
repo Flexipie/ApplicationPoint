@@ -4,6 +4,7 @@ import { db } from '@/db';
 import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { DisconnectGmailButton } from '@/components/settings/disconnect-gmail-button';
+import { ConnectGmailButton } from '@/components/settings/connect-gmail-button';
 import { Mail, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -72,12 +73,14 @@ export default async function SettingsPage() {
             {isGmailConnected ? (
               <DisconnectGmailButton userId={session.user.id} />
             ) : (
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  Gmail access is granted automatically when you sign in with Google.
-                  If your Gmail connection was disconnected, please sign out and sign back in to reconnect.
-                </p>
-              </div>
+              <>
+                <ConnectGmailButton />
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg flex-1">
+                  <p className="text-sm text-blue-800">
+                    Click "Connect Gmail" to enable automatic email processing. We use your existing Google sign-in credentials.
+                  </p>
+                </div>
+              </>
             )}
           </div>
 
