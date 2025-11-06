@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Briefcase, Settings, LogOut } from 'lucide-react';
+import { Home, Briefcase, Mail, Settings, LogOut } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -18,6 +18,7 @@ interface SidebarProps {
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Applications', href: '/applications', icon: Briefcase },
+  { name: 'Email Review', href: '/email-review', icon: Mail },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
