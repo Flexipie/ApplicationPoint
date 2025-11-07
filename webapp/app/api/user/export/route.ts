@@ -28,9 +28,17 @@ export async function GET() {
   try {
     const userId = session.user.id;
 
-    // Fetch all user data
+    // First, fetch applications
+    const userApplications = await db
+      .select()
+      .from(applications)
+      .where(eq(applications.userId, userId))
+      .orderBy(desc(applications.createdAt));
+
+    const applicationIds = userApplications.map((app) => app.id);
+
+    // Then fetch all other user data
     const [
-      userApplications,
       userReminders,
       userEmailEvents,
       userContacts,
@@ -38,11 +46,6 @@ export async function GET() {
       userSubscription,
       userUsage,
     ] = await Promise.all([
-      db
-        .select()
-        .from(applications)
-        .where(eq(applications.userId, userId))
-        .orderBy(desc(applications.createdAt)),
       db
         .select()
         .from(reminders)
@@ -53,20 +56,18 @@ export async function GET() {
         .from(emailEvents)
         .where(eq(emailEvents.userId, userId))
         .orderBy(desc(emailEvents.createdAt)),
-      db.query.contacts.findMany({
-        where: (contacts, { eq, inArray }) =>
-          inArray(
-            contacts.applicationId,
-            userApplications.map((app) => app.id)
-          ),
-      }),
-      db.query.stageHistory.findMany({
-        where: (stageHistory, { eq, inArray }) =>
-          inArray(
-            stageHistory.applicationId,
-            userApplications.map((app) => app.id)
-          ),
-      }),
+      applicationIds.length > 0
+        ? db.query.contacts.findMany({
+            where: (contacts, { inArray }) =>
+              inArray(contacts.applicationId, applicationIds),
+          })
+        : [],
+      applicationIds.length > 0
+        ? db.query.stageHistory.findMany({
+            where: (stageHistory, { inArray }) =>
+              inArray(stageHistory.applicationId, applicationIds),
+          })
+        : [],
       db.query.subscriptions.findFirst({
         where: (subscriptions, { eq }) => eq(subscriptions.userId, userId),
       }),
