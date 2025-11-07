@@ -35,18 +35,18 @@ export function Footer() {
             <h3 className="text-sm font-semibold text-gray-900">Product</h3>
             <ul className="mt-4 space-y-3">
               <li>
-                <Link href="#features" className="text-sm text-gray-600 transition-colors hover:text-gray-900">
+                <Link href="/#features" className="text-sm text-gray-600 transition-colors hover:text-gray-900">
                   Features
                 </Link>
               </li>
               <li>
-                <Link href="/login" className="text-sm text-gray-600 transition-colors hover:text-gray-900">
+                <Link href="/pricing" className="text-sm text-gray-600 transition-colors hover:text-gray-900">
                   Pricing
                 </Link>
               </li>
               <li>
                 <Link href="/login" className="text-sm text-gray-600 transition-colors hover:text-gray-900">
-                  Chrome Extension
+                  Get Started
                 </Link>
               </li>
             </ul>
@@ -79,14 +79,14 @@ export function Footer() {
             <h3 className="text-sm font-semibold text-gray-900">Legal</h3>
             <ul className="mt-4 space-y-3">
               <li>
-                <a href="#" className="text-sm text-gray-600 transition-colors hover:text-gray-900">
-                  Privacy
-                </a>
+                <Link href="/privacy" className="text-sm text-gray-600 transition-colors hover:text-gray-900">
+                  Privacy Policy
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-sm text-gray-600 transition-colors hover:text-gray-900">
-                  Terms
-                </a>
+                <Link href="/terms" className="text-sm text-gray-600 transition-colors hover:text-gray-900">
+                  Terms of Service
+                </Link>
               </li>
             </ul>
           </div>
