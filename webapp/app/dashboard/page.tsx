@@ -9,9 +9,11 @@ import { StatsCards } from '@/components/dashboard/stats-cards';
 import { RecentActivity } from '@/components/dashboard/recent-activity';
 import { StatusChart } from '@/components/dashboard/status-chart';
 import { UpcomingReminders } from '@/components/dashboard/upcoming-reminders';
+import { UsageBanner } from '@/components/dashboard/usage-banner';
 import { AppLayout } from '@/components/layout/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { SubscriptionService } from '@/lib/services/subscription';
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -19,6 +21,10 @@ export default async function DashboardPage() {
   if (!session?.user) {
     redirect('/login');
   }
+
+  // Fetch subscription and usage
+  const subscription = await SubscriptionService.getOrCreateSubscription(session.user.id);
+  const usage = await SubscriptionService.getCurrentUsage(session.user.id);
 
   // Fetch all applications for the user
   const userApplications = await db
@@ -132,6 +138,9 @@ export default async function DashboardPage() {
             </div>
           ) : (
             <>
+              {/* Usage Banner */}
+              <UsageBanner subscription={subscription} usage={usage} />
+
               {/* Stats Cards */}
               <StatsCards stats={stats} />
 

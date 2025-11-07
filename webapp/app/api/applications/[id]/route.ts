@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { ApplicationService } from '@/lib/services/applications';
+import { SubscriptionService } from '@/lib/services/subscription';
 import { updateApplicationSchema } from '@/lib/validations/application';
 import { ZodError } from 'zod';
 
@@ -95,7 +96,14 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Delete application
     await ApplicationService.delete(params.id, session.user.id);
+
+    // Decrement usage counter
+    const usage = await SubscriptionService.getCurrentUsage(session.user.id);
+    if (usage.applicationsCount > 0) {
+      await SubscriptionService.incrementUsage(session.user.id, 'applicationsCount', -1);
+    }
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {

@@ -3,8 +3,10 @@ import { auth } from '@/lib/auth';
 import { GmailClient } from '@/lib/gmail/client';
 import { EmailClassifier } from '@/lib/email-parser/classifier';
 import { EmailProcessor } from '@/lib/services/email-processor';
+import { SubscriptionService } from '@/lib/services/subscription';
 import { ParsedEmail } from '@/lib/gmail/types';
 import { rateLimit, apiRateLimiter } from '@/lib/rate-limit';
+import { hasFeature } from '@/lib/stripe/config';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -21,6 +23,20 @@ export async function POST(req: NextRequest) {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check if user has email integration feature
+    const subscription = await SubscriptionService.getOrCreateSubscription(session.user.id);
+
+    if (!hasFeature(subscription.plan, 'emailIntegration')) {
+      return NextResponse.json(
+        {
+          error: 'Feature not available',
+          message: 'Email integration requires Premium or Enterprise plan. Please upgrade to access this feature.',
+          upgradeUrl: '/pricing',
+        },
+        { status: 403 }
+      );
     }
 
     // Get Gmail client for user
@@ -67,8 +83,17 @@ export async function POST(req: NextRequest) {
 
     // Process emails (match to applications and update statuses)
     const results = await EmailProcessor.processEmails(session.user.id, jobEmails);
-    
+
     const summary = EmailProcessor.getSummary(results);
+
+    // Track usage for email events processed
+    if (jobEmails.length > 0) {
+      await SubscriptionService.incrementUsage(
+        session.user.id,
+        'emailEventsProcessed',
+        jobEmails.length
+      );
+    }
 
     console.log('📊 Processing complete:', summary);
 

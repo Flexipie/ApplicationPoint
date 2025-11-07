@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { ApplicationService } from '@/lib/services/applications';
+import { SubscriptionService } from '@/lib/services/subscription';
 import { createApplicationSchema, listApplicationsSchema } from '@/lib/validations/application';
 import { ZodError } from 'zod';
 import { rateLimit, readRateLimiter } from '@/lib/rate-limit';
+import { isWithinLimits, getPlanConfig } from '@/lib/stripe/config';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -76,8 +78,28 @@ export async function POST(req: NextRequest) {
     // Validate request body
     const validatedData = createApplicationSchema.parse(body);
 
+    // Check plan limits
+    const subscription = await SubscriptionService.getOrCreateSubscription(session.user.id);
+    const usage = await SubscriptionService.getCurrentUsage(session.user.id);
+
+    // Check if user has reached their application limit
+    if (!isWithinLimits(subscription.plan, 'applications', usage.applicationsCount)) {
+      const planConfig = getPlanConfig(subscription.plan);
+      return NextResponse.json(
+        {
+          error: 'Application limit reached',
+          message: `You have reached your plan's limit of ${planConfig.limits.applications} applications. Please upgrade your plan to create more applications.`,
+          upgradeUrl: '/pricing',
+        },
+        { status: 403 }
+      );
+    }
+
     // Create application
     const application = await ApplicationService.create(session.user.id, validatedData);
+
+    // Increment usage counter
+    await SubscriptionService.incrementUsage(session.user.id, 'applicationsCount', 1);
 
     return NextResponse.json(application, { status: 201 });
   } catch (error) {
