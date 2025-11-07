@@ -130,6 +130,11 @@ async function handleSaveJob() {
 // Actually save the job to API
 async function saveJobToAPI(jobData: JobData) {
   try {
+    // Check if extension context is valid
+    if (!chrome?.runtime?.id) {
+      throw new Error('Extension context invalidated. Please reload the page.');
+    }
+
     // Send to background script to save via API
     const response = await chrome.runtime.sendMessage({
       type: 'SAVE_JOB',
@@ -178,6 +183,12 @@ async function checkForDuplicates(jobData: JobData): Promise<{
   loginUrl?: string;
 }> {
   try {
+    // Check if extension context is valid
+    if (!chrome?.runtime?.id) {
+      console.warn('Extension context invalidated, skipping duplicate check');
+      return { hasDuplicates: false, duplicates: [], apiUrl: 'http://localhost:3000' };
+    }
+
     const response = await chrome.runtime.sendMessage({
       type: 'CHECK_DUPLICATE',
       data: {
