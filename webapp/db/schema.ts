@@ -29,6 +29,22 @@ export const reminderTypeEnum = pgEnum('reminder_type', [
   'other',
 ]);
 
+export const subscriptionPlanEnum = pgEnum('subscription_plan', [
+  'free',
+  'premium',
+  'enterprise',
+]);
+
+export const subscriptionStatusEnum = pgEnum('subscription_status', [
+  'active',
+  'canceled',
+  'past_due',
+  'incomplete',
+  'incomplete_expired',
+  'trialing',
+  'unpaid',
+]);
+
 // Users table
 export const users = pgTable('users', {
   id: text('id')
@@ -202,6 +218,64 @@ export const reminders = pgTable('reminders', {
   completedAt: timestamp('completed_at', { mode: 'date' }),
 });
 
+// Subscriptions table
+export const subscriptions = pgTable('subscriptions', {
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  userId: text('user_id')
+    .notNull()
+    .unique()
+    .references(() => users.id, { onDelete: 'cascade' }),
+
+  // Stripe details
+  stripeCustomerId: text('stripe_customer_id').unique(),
+  stripeSubscriptionId: text('stripe_subscription_id').unique(),
+  stripePriceId: text('stripe_price_id'),
+
+  // Subscription details
+  plan: subscriptionPlanEnum('plan').default('free').notNull(),
+  status: subscriptionStatusEnum('status').default('active').notNull(),
+
+  // Billing
+  currentPeriodStart: timestamp('current_period_start', { mode: 'date' }),
+  currentPeriodEnd: timestamp('current_period_end', { mode: 'date' }),
+  cancelAtPeriodEnd: boolean('cancel_at_period_end').default(false),
+  canceledAt: timestamp('canceled_at', { mode: 'date' }),
+  trialStart: timestamp('trial_start', { mode: 'date' }),
+  trialEnd: timestamp('trial_end', { mode: 'date' }),
+
+  // Timestamps
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index('subscriptions_user_id_idx').on(table.userId),
+  stripeCustomerIdx: index('subscriptions_stripe_customer_idx').on(table.stripeCustomerId),
+}));
+
+// Usage tracking table (for plan limits enforcement)
+export const usageTracking = pgTable('usage_tracking', {
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+
+  // Usage metrics
+  applicationsCount: integer('applications_count').default(0).notNull(),
+  emailEventsProcessed: integer('email_events_processed').default(0).notNull(),
+
+  // Reset period (monthly)
+  periodStart: timestamp('period_start', { mode: 'date' }).notNull(),
+  periodEnd: timestamp('period_end', { mode: 'date' }).notNull(),
+
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+}, (table) => ({
+  userIdPeriodIdx: index('usage_tracking_user_period_idx').on(table.userId, table.periodStart),
+}));
+
 // Accounts table (for NextAuth OAuth)
 export const accounts = pgTable('accounts', {
   id: text('id')
@@ -265,3 +339,9 @@ export type NewAttachment = typeof attachments.$inferInsert;
 
 export type Reminder = typeof reminders.$inferSelect;
 export type NewReminder = typeof reminders.$inferInsert;
+
+export type Subscription = typeof subscriptions.$inferSelect;
+export type NewSubscription = typeof subscriptions.$inferInsert;
+
+export type UsageTracking = typeof usageTracking.$inferSelect;
+export type NewUsageTracking = typeof usageTracking.$inferInsert;
