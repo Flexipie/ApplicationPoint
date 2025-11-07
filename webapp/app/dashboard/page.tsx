@@ -23,8 +23,8 @@ export default async function DashboardPage() {
   }
 
   // Fetch subscription and usage
-  const subscription = await SubscriptionService.getOrCreateSubscription(session.user.id);
-  const usage = await SubscriptionService.getCurrentUsage(session.user.id);
+  const subscription = await SubscriptionService.getOrCreateSubscription(session.user.id!);
+  const usage = await SubscriptionService.getCurrentUsage(session.user.id!);
 
   // Fetch all applications for the user
   const userApplications = await db
