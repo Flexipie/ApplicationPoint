@@ -14,7 +14,12 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
         sendResponse({ success: true, data: result });
       })
       .catch((error) => {
-        sendResponse({ success: false, error: error.message });
+        sendResponse({
+          success: false,
+          error: error.message,
+          isAuthError: error.isAuthError,
+          loginUrl: error.loginUrl,
+        });
       });
 
     // Return true to indicate async response
@@ -28,7 +33,12 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
         sendResponse({ success: true, data: result });
       })
       .catch((error) => {
-        sendResponse({ success: false, error: error.message });
+        sendResponse({
+          success: false,
+          error: error.message,
+          isAuthError: error.isAuthError,
+          loginUrl: error.loginUrl,
+        });
       });
 
     return true;
@@ -92,6 +102,14 @@ async function handleCheckDuplicate(jobData: { jobTitle: string; companyName: st
       credentials: 'include', // Include cookies for auth
     });
 
+    // Handle auth errors specifically
+    if (response.status === 401 || response.status === 403) {
+      const error: any = new Error('Please log in to ApplicationPoint');
+      error.isAuthError = true;
+      error.loginUrl = `${baseUrl}/login`;
+      throw error;
+    }
+
     if (!response.ok) {
       throw new Error(`Failed to check duplicates: ${response.statusText}`);
     }
@@ -120,8 +138,26 @@ async function saveJobToAPI(jobData: any) {
       body: JSON.stringify(jobData),
     });
 
+    // Handle auth errors specifically
+    if (response.status === 401 || response.status === 403) {
+      const error: any = new Error('Please log in to ApplicationPoint to save jobs');
+      error.isAuthError = true;
+      error.loginUrl = `${baseUrl}/login`;
+      throw error;
+    }
+
     if (!response.ok) {
-      throw new Error(`Failed to save job: ${response.statusText}`);
+      // Try to get error message from response
+      let errorMessage = `Failed to save job: ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        if (errorData.error) {
+          errorMessage = errorData.error;
+        }
+      } catch {
+        // Ignore JSON parse errors
+      }
+      throw new Error(errorMessage);
     }
 
     const result = await response.json();
@@ -141,7 +177,13 @@ async function handleSaveJobWithQueue(jobData: any) {
     console.log('Job saved successfully');
     return result;
   } catch (error: any) {
-    // Failed - add to offline queue
+    // Check if this is an auth error - don't queue these, throw immediately
+    if (error.isAuthError) {
+      console.log('Authentication error - not queuing');
+      throw error;
+    }
+
+    // Failed (non-auth error) - add to offline queue
     console.log('Save failed, adding to offline queue:', error.message);
 
     try {

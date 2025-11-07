@@ -96,6 +96,12 @@ async function handleSaveJob() {
     // Check for duplicates before showing preview
     const duplicateCheck = await checkForDuplicates(jobData);
 
+    // If auth is required, show auth modal immediately
+    if (duplicateCheck.requiresAuth && duplicateCheck.loginUrl) {
+      showAuthErrorModal(duplicateCheck.loginUrl, 'Please log in to ApplicationPoint to save jobs');
+      return;
+    }
+
     if (duplicateCheck.hasDuplicates && duplicateCheck.duplicates.length > 0) {
       // Show duplicate warning
       const shouldContinue = await showDuplicateWarning(duplicateCheck.duplicates, duplicateCheck.apiUrl);
@@ -149,7 +155,13 @@ async function saveJobToAPI(jobData: JobData) {
         updateButtonToSaved();
       }
     } else {
-      throw new Error(response.error || 'Failed to save job');
+      // Check if this is an auth error
+      if (response.isAuthError) {
+        console.log('Authentication required');
+        showAuthErrorModal(response.loginUrl, response.error);
+      } else {
+        throw new Error(response.error || 'Failed to save job');
+      }
     }
   } catch (error) {
     console.error('Error saving job:', error);
@@ -162,6 +174,8 @@ async function checkForDuplicates(jobData: JobData): Promise<{
   hasDuplicates: boolean;
   duplicates: any[];
   apiUrl: string;
+  requiresAuth?: boolean;
+  loginUrl?: string;
 }> {
   try {
     const response = await chrome.runtime.sendMessage({
@@ -176,6 +190,17 @@ async function checkForDuplicates(jobData: JobData): Promise<{
     if (response.success) {
       return response.data;
     } else {
+      // If this is an auth error, return it so we can handle it
+      if (response.isAuthError) {
+        return {
+          hasDuplicates: false,
+          duplicates: [],
+          apiUrl: 'http://localhost:3000',
+          requiresAuth: true,
+          loginUrl: response.loginUrl,
+        };
+      }
+
       console.error('Duplicate check failed:', response.error);
       // Don't block save if duplicate check fails
       return { hasDuplicates: false, duplicates: [], apiUrl: 'http://localhost:3000' };
@@ -185,6 +210,104 @@ async function checkForDuplicates(jobData: JobData): Promise<{
     // Don't block save if duplicate check fails
     return { hasDuplicates: false, duplicates: [], apiUrl: 'http://localhost:3000' };
   }
+}
+
+// Show authentication error modal
+function showAuthErrorModal(loginUrl: string, errorMessage: string): void {
+  // Create modal overlay
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  `;
+
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  `;
+
+  modal.innerHTML = `
+    <div style="margin-bottom: 20px; text-align: center;">
+      <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+      </div>
+      <h2 style="font-size: 20px; font-weight: 600; color: #1f2937; margin: 0 0 8px 0;">
+        Sign In Required
+      </h2>
+      <p style="font-size: 14px; color: #6b7280; margin: 0;">
+        ${errorMessage || 'Please log in to ApplicationPoint to save jobs'}
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 8px; flex-direction: column;">
+      <button id="ap-auth-login" style="
+        padding: 12px 16px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      ">
+        Sign In to ApplicationPoint
+      </button>
+      <button id="ap-auth-cancel" style="
+        padding: 10px 16px;
+        background: transparent;
+        color: #6b7280;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+      ">
+        Cancel
+      </button>
+    </div>
+  `;
+
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  // Button handlers
+  const loginButton = modal.querySelector('#ap-auth-login');
+  const cancelButton = modal.querySelector('#ap-auth-cancel');
+
+  loginButton?.addEventListener('click', () => {
+    // Open login page in new tab
+    window.open(loginUrl, '_blank');
+    document.body.removeChild(overlay);
+  });
+
+  cancelButton?.addEventListener('click', () => {
+    document.body.removeChild(overlay);
+  });
+
+  // Close on overlay click
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      document.body.removeChild(overlay);
+    }
+  });
 }
 
 // Show duplicate warning modal
