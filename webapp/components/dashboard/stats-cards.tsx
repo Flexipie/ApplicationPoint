@@ -84,22 +84,22 @@ export function StatsCards({ stats }: StatsCardsProps) {
   };
 
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
       {STAT_CONFIGS.map((config) => {
         const Icon = config.icon;
         const value = getValue(config.key);
 
         return (
           <Card key={config.key} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
+            <CardContent className="p-3">
               <div className="flex items-center justify-between">
-                <div className={`rounded-lg p-2 ${config.bgColor}`}>
-                  <Icon className={`h-5 w-5 ${config.textColor}`} />
+                <div className={`rounded-lg p-1.5 ${config.bgColor}`}>
+                  <Icon className={`h-4 w-4 ${config.textColor}`} />
                 </div>
               </div>
-              <div className="mt-3">
-                <p className="text-2xl font-bold">{value}</p>
-                <p className="mt-1 text-sm font-medium text-muted-foreground">
+              <div className="mt-2">
+                <p className="text-xl font-bold">{value}</p>
+                <p className="mt-0.5 text-xs font-medium text-muted-foreground">
                   {config.label}
                 </p>
               </div>

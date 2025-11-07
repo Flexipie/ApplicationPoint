@@ -14,12 +14,12 @@ interface ResizableSidebarProps {
 
 export function ResizableSidebar({ user }: ResizableSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(256); // 16rem default
+  const [sidebarWidth, setSidebarWidth] = useState(240); // Smaller default
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
 
-  const minWidth = 200;
-  const maxWidth = 400;
+  const minWidth = 180;
+  const maxWidth = 320;
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -60,13 +60,13 @@ export function ResizableSidebar({ user }: ResizableSidebarProps) {
       {/* Sidebar Container */}
       <div
         ref={sidebarRef}
-        className="relative transition-all duration-300 ease-in-out overflow-hidden"
+        className={`relative overflow-hidden ${isResizing ? '' : 'transition-all duration-200 ease-out'}`}
         style={{
           width: isCollapsed ? '0px' : `${sidebarWidth}px`,
         }}
       >
         {/* Sidebar Content - Fixed Width */}
-        <div 
+        <div
           className="h-screen"
           style={{ width: `${sidebarWidth}px` }}
         >
@@ -76,12 +76,12 @@ export function ResizableSidebar({ user }: ResizableSidebarProps) {
         {/* Resize Handle */}
         {!isCollapsed && (
           <div
-            className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-blue-500 transition-colors group z-50"
+            className="absolute top-0 right-0 h-full w-1.5 cursor-col-resize hover:bg-blue-500/50 transition-colors group z-50"
             onMouseDown={handleMouseDown}
           >
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <div className="bg-blue-500 rounded-full p-1">
-                <GripVertical className="h-4 w-4 text-white" />
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <div className="bg-blue-500 rounded-full p-1 shadow-lg">
+                <GripVertical className="h-3 w-3 text-white" />
               </div>
             </div>
           </div>
@@ -92,11 +92,11 @@ export function ResizableSidebar({ user }: ResizableSidebarProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-4 right-2 z-50 bg-background/80 backdrop-blur-sm hover:bg-background"
+            className="absolute top-2 right-2 z-50 h-7 w-7 bg-background/80 backdrop-blur-sm hover:bg-background"
             onClick={() => setIsCollapsed(true)}
             title="Collapse sidebar"
           >
-            <PanelLeftClose className="h-4 w-4" />
+            <PanelLeftClose className="h-3.5 w-3.5" />
           </Button>
         )}
       </div>
@@ -106,7 +106,7 @@ export function ResizableSidebar({ user }: ResizableSidebarProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="fixed top-4 left-4 z-50 bg-background/80 backdrop-blur-sm hover:bg-background shadow-md"
+          className="fixed top-2 left-2 z-50 h-8 w-8 bg-background/80 backdrop-blur-sm hover:bg-background shadow-md"
           onClick={() => setIsCollapsed(false)}
           title="Expand sidebar"
         >
