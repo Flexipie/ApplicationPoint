@@ -20,6 +20,19 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
     return true;
   }
 
+  if (request.type === 'CHECK_DUPLICATE') {
+    // Check for duplicate applications
+    handleCheckDuplicate(request.data)
+      .then((result) => {
+        sendResponse({ success: true, data: result });
+      })
+      .catch((error) => {
+        sendResponse({ success: false, error: error.message });
+      });
+
+    return true;
+  }
+
   if (request.type === 'GET_AUTH_TOKEN') {
     // Get stored auth token
     chrome.storage.local.get(['authToken'], (result) => {
@@ -28,6 +41,43 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
     return true;
   }
 });
+
+// Function to check for duplicate applications
+async function handleCheckDuplicate(jobData: { jobTitle: string; companyName: string; applyUrl?: string }) {
+  try {
+    // Get API URL from storage or use default
+    const { apiUrl } = await chrome.storage.local.get(['apiUrl']);
+    const baseUrl = apiUrl || 'http://localhost:3000';
+
+    // Build query parameters
+    const params = new URLSearchParams({
+      jobTitle: jobData.jobTitle,
+      companyName: jobData.companyName,
+    });
+
+    if (jobData.applyUrl) {
+      params.append('applyUrl', jobData.applyUrl);
+    }
+
+    const response = await fetch(`${baseUrl}/api/applications/check-duplicate?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // Include cookies for auth
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to check duplicates: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    return { ...result, apiUrl: baseUrl };
+  } catch (error) {
+    console.error('Error checking duplicates:', error);
+    throw error;
+  }
+}
 
 // Function to save job to API
 async function handleSaveJob(jobData: any) {

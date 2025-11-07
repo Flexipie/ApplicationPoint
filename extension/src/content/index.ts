@@ -66,7 +66,7 @@ function createSaveButton() {
   console.log('ApplicationPoint save button injected');
 }
 
-// Handle save job click - show preview modal
+// Handle save job click - check for duplicates then show preview modal
 async function handleSaveJob() {
   try {
     // Parse job data based on site
@@ -91,6 +91,18 @@ async function handleSaveJob() {
     if (!jobData) {
       showErrorToast('Could not parse job data from this page. Please try copying the details manually.');
       return;
+    }
+
+    // Check for duplicates before showing preview
+    const duplicateCheck = await checkForDuplicates(jobData);
+
+    if (duplicateCheck.hasDuplicates && duplicateCheck.duplicates.length > 0) {
+      // Show duplicate warning
+      const shouldContinue = await showDuplicateWarning(duplicateCheck.duplicates, duplicateCheck.apiUrl);
+      if (!shouldContinue) {
+        console.log('Save cancelled due to duplicate');
+        return;
+      }
     }
 
     // Show preview modal
@@ -134,6 +146,192 @@ async function saveJobToAPI(jobData: JobData) {
     console.error('Error saving job:', error);
     showErrorToast('Failed to save application. Please try again.');
   }
+}
+
+// Check for duplicate applications
+async function checkForDuplicates(jobData: JobData): Promise<{
+  hasDuplicates: boolean;
+  duplicates: any[];
+  apiUrl: string;
+}> {
+  try {
+    const response = await chrome.runtime.sendMessage({
+      type: 'CHECK_DUPLICATE',
+      data: {
+        jobTitle: jobData.jobTitle,
+        companyName: jobData.companyName,
+        applyUrl: jobData.applyUrl,
+      },
+    });
+
+    if (response.success) {
+      return response.data;
+    } else {
+      console.error('Duplicate check failed:', response.error);
+      // Don't block save if duplicate check fails
+      return { hasDuplicates: false, duplicates: [], apiUrl: 'http://localhost:3000' };
+    }
+  } catch (error) {
+    console.error('Error checking duplicates:', error);
+    // Don't block save if duplicate check fails
+    return { hasDuplicates: false, duplicates: [], apiUrl: 'http://localhost:3000' };
+  }
+}
+
+// Show duplicate warning modal
+async function showDuplicateWarning(duplicates: any[], apiUrl: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    // Create modal overlay
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 10001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    `;
+
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    `;
+
+    const topDuplicate = duplicates[0];
+    const matchTypeLabelMap: Record<string, string> = {
+      'exact_url': 'Exact URL match',
+      'exact_title_company': 'Exact match',
+      'fuzzy_match': 'Similar application'
+    };
+    const matchTypeLabel = matchTypeLabelMap[topDuplicate.matchType] || 'Potential duplicate';
+
+    modal.innerHTML = `
+      <div style="margin-bottom: 20px;">
+        <h2 style="font-size: 20px; font-weight: 600; color: #f59e0b; margin: 0 0 8px 0; display: flex; align-items: center; gap: 8px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          Possible Duplicate
+        </h2>
+        <p style="font-size: 14px; color: #6b7280; margin: 0;">
+          Found ${duplicates.length} similar application${duplicates.length > 1 ? 's' : ''} already saved
+        </p>
+      </div>
+
+      <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; border-radius: 6px; margin-bottom: 20px;">
+        <div style="font-size: 12px; color: #92400e; font-weight: 600; margin-bottom: 8px;">
+          ${matchTypeLabel} (${Math.round(topDuplicate.similarity * 100)}% match)
+        </div>
+        <div style="font-size: 14px; font-weight: 600; color: #1f2937; margin-bottom: 4px;">
+          ${topDuplicate.jobTitle}
+        </div>
+        <div style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">
+          ${topDuplicate.companyName}
+        </div>
+        <div style="font-size: 12px; color: #9ca3af;">
+          Status: <span style="text-transform: capitalize; font-weight: 500;">${topDuplicate.currentStatus}</span> •
+          Saved ${new Date(topDuplicate.createdAt).toLocaleDateString()}
+        </div>
+      </div>
+
+      ${duplicates.length > 1 ? `
+        <div style="font-size: 13px; color: #6b7280; margin-bottom: 16px;">
+          + ${duplicates.length - 1} more similar application${duplicates.length > 2 ? 's' : ''}
+        </div>
+      ` : ''}
+
+      <div style="display: flex; gap: 8px; flex-direction: column;">
+        <button id="ap-duplicate-view" style="
+          flex: 1;
+          padding: 10px 16px;
+          background: #3b82f6;
+          color: white;
+          border: none;
+          border-radius: 6px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+        ">
+          View Existing Application
+        </button>
+        <button id="ap-duplicate-save-anyway" style="
+          flex: 1;
+          padding: 10px 16px;
+          background: white;
+          color: #374151;
+          border: 2px solid #d1d5db;
+          border-radius: 6px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+        ">
+          Save as New Application
+        </button>
+        <button id="ap-duplicate-cancel" style="
+          flex: 1;
+          padding: 10px 16px;
+          background: transparent;
+          color: #6b7280;
+          border: none;
+          border-radius: 6px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+        ">
+          Cancel
+        </button>
+      </div>
+    `;
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    // Button handlers
+    const viewButton = modal.querySelector('#ap-duplicate-view');
+    const saveAnywayButton = modal.querySelector('#ap-duplicate-save-anyway');
+    const cancelButton = modal.querySelector('#ap-duplicate-cancel');
+
+    viewButton?.addEventListener('click', () => {
+      // Open existing application in new tab
+      window.open(`${apiUrl}/applications/${topDuplicate.id}`, '_blank');
+      document.body.removeChild(overlay);
+      resolve(false); // Don't continue with save
+    });
+
+    saveAnywayButton?.addEventListener('click', () => {
+      document.body.removeChild(overlay);
+      resolve(true); // Continue with save
+    });
+
+    cancelButton?.addEventListener('click', () => {
+      document.body.removeChild(overlay);
+      resolve(false); // Don't continue with save
+    });
+
+    // Close on overlay click
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        document.body.removeChild(overlay);
+        resolve(false);
+      }
+    });
+  });
 }
 
 // Update button to "Already Saved" state
