@@ -239,6 +239,90 @@ export function showErrorToast(message: string) {
   }, 3000);
 }
 
+export function showQueuedToast(message: string) {
+  // Remove existing toast if any
+  const existing = document.getElementById('applicationpoint-toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'applicationpoint-toast';
+  toast.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 100000;
+    background: white;
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 400px;
+    animation: slideIn 0.3s ease, slideOut 0.3s ease 3.7s;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  `;
+
+  toast.innerHTML = `
+    <style>
+      @keyframes slideIn {
+        from {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      @keyframes slideOut {
+        from {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        to {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+      }
+    </style>
+
+    <div style="flex-shrink: 0; width: 40px; height: 40px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polyline points="12 6 12 12 16 14"></polyline>
+      </svg>
+    </div>
+    <div style="flex: 1;">
+      <p style="font-size: 14px; font-weight: 600; color: #111827; margin: 0 0 4px 0;">Saved to Queue</p>
+      <p style="font-size: 13px; color: #6b7280; margin: 0;">${escapeHtml(message)}</p>
+    </div>
+    <button id="toast-close" style="flex-shrink: 0; background: none; border: none; color: #9ca3af; cursor: pointer; padding: 4px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+  `;
+
+  document.body.appendChild(toast);
+
+  // Handle close button
+  const closeBtn = document.getElementById('toast-close');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      toast.remove();
+    });
+  }
+
+  // Auto remove after 4 seconds
+  setTimeout(() => {
+    if (toast.parentElement) {
+      toast.remove();
+    }
+  }, 4000);
+}
+
 function escapeHtml(text: string): string {
   const div = document.createElement('div');
   div.textContent = text;

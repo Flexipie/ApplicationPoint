@@ -3,7 +3,7 @@ import { parseLinkedInJob } from '../parsers/linkedin';
 import { parseIndeedJob } from '../parsers/indeed';
 import { parseGenericJob, looksLikeJobPage } from '../parsers/generic';
 import { createPreviewModal, type JobData } from './preview-modal';
-import { showSuccessToast, showErrorToast } from './success-toast';
+import { showSuccessToast, showErrorToast, showQueuedToast } from './success-toast';
 
 console.log('ApplicationPoint content script loaded');
 
@@ -131,14 +131,23 @@ async function saveJobToAPI(jobData: JobData) {
     });
 
     if (response.success) {
-      // Get API URL from the response (background script includes it)
-      const baseUrl = response.data.apiUrl || 'http://localhost:3000';
+      const data = response.data;
 
-      // Show success toast with link (API returns application directly, not wrapped)
-      showSuccessToast(response.data.id, baseUrl);
+      // Check if job was queued for later
+      if (data.queued) {
+        console.log('Job queued for offline sync:', data.queueId);
+        showQueuedToast(data.message);
+        updateButtonToQueued();
+      } else {
+        // Get API URL from the response (background script includes it)
+        const baseUrl = data.apiUrl || 'http://localhost:3000';
 
-      // Update button to show already saved
-      updateButtonToSaved();
+        // Show success toast with link (API returns application directly, not wrapped)
+        showSuccessToast(data.id, baseUrl);
+
+        // Update button to show already saved
+        updateButtonToSaved();
+      }
     } else {
       throw new Error(response.error || 'Failed to save job');
     }
@@ -346,6 +355,23 @@ function updateButtonToSaved() {
     Saved
   `;
   button.style.background = 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)';
+  button.style.pointerEvents = 'none';
+  button.style.opacity = '0.9';
+}
+
+// Update button to "Queued" state
+function updateButtonToQueued() {
+  const button = document.getElementById('applicationpoint-save-btn');
+  if (!button) return;
+
+  button.innerHTML = `
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    Queued
+  `;
+  button.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
   button.style.pointerEvents = 'none';
   button.style.opacity = '0.9';
 }
