@@ -155,7 +155,6 @@ export default async function ApplicationDetailPage({
                   dueDate: r.dueDate.toISOString(),
                 }))}
                 showCompleted={true}
-                onCreateClick={() => {}}
               />
             </div>
 
