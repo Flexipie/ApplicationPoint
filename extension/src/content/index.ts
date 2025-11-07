@@ -350,8 +350,22 @@ function updateButtonToSaved() {
   button.style.opacity = '0.9';
 }
 
+// Keyboard shortcut handler
+function handleKeyboardShortcut(event: KeyboardEvent) {
+  // Ctrl+Shift+S (Windows/Linux) or Cmd+Shift+S (Mac)
+  if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'S') {
+    event.preventDefault();
+    console.log('ApplicationPoint: Keyboard shortcut triggered (Ctrl+Shift+S)');
+    handleSaveJob();
+  }
+}
+
 // Initialize: inject button when page is ready
 function init() {
+  // Always add keyboard shortcut (works everywhere, even if button doesn't show)
+  document.addEventListener('keydown', handleKeyboardShortcut);
+  console.log('ApplicationPoint: Keyboard shortcut enabled (Ctrl+Shift+S or Cmd+Shift+S)');
+
   // Check if we should show the button on this page
   const shouldShowButton = isLinkedIn || isIndeed || isGenericJobPage;
 
@@ -367,21 +381,39 @@ function init() {
 
     // Also watch for navigation changes (SPAs)
     let lastUrl = window.location.href;
-    new MutationObserver(() => {
+    const observer = new MutationObserver(() => {
       const currentUrl = window.location.href;
       if (currentUrl !== lastUrl) {
         lastUrl = currentUrl;
         console.log('ApplicationPoint: URL changed, re-checking page...');
 
         // Re-check if this is a job page after navigation
-        const isStillJobPage = isLinkedIn || isIndeed || looksLikeJobPage();
-        if (isStillJobPage) {
-          setTimeout(createSaveButton, 1000); // Wait for page content to load
+        try {
+          const isStillJobPage = isLinkedIn || isIndeed || looksLikeJobPage();
+          if (isStillJobPage) {
+            setTimeout(createSaveButton, 1000); // Wait for page content to load
+          }
+        } catch (error) {
+          console.error('ApplicationPoint: Error checking if job page:', error);
+          // Still try to show button on LinkedIn/Indeed
+          if (isLinkedIn || isIndeed) {
+            setTimeout(createSaveButton, 1000);
+          }
         }
       }
-    }).observe(document.body, { subtree: true, childList: true });
+    });
+
+    // Wrap observer in try-catch to handle any DOM access issues
+    try {
+      observer.observe(document.body, { subtree: true, childList: true });
+    } catch (error) {
+      console.error('ApplicationPoint: Error setting up observer:', error);
+      // Fallback: just create button once
+      setTimeout(createSaveButton, 2000);
+    }
   } else {
-    console.log('ApplicationPoint: Not a job page, skipping button injection');
+    console.log('ApplicationPoint: Not a job page, but keyboard shortcut still available');
+    console.log('ApplicationPoint: Press Ctrl+Shift+S (or Cmd+Shift+S) to save any job');
   }
 }
 

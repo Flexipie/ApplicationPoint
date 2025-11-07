@@ -1,6 +1,6 @@
 import { db } from '@/db';
 import { applications, stageHistory } from '@/db/schema';
-import { eq, and, or, like, desc, asc, sql } from 'drizzle-orm';
+import { eq, and, or, like, ilike, desc, asc, sql } from 'drizzle-orm';
 import type { CreateApplicationInput, UpdateApplicationInput, ListApplicationsQuery } from '@/lib/validations/application';
 import { ReminderService } from './reminder-service';
 
@@ -73,8 +73,8 @@ export class ApplicationService {
     if (search) {
       conditions.push(
         or(
-          like(applications.companyName, `%${search}%`),
-          like(applications.jobTitle, `%${search}%`)
+          ilike(applications.companyName, `%${search}%`),
+          ilike(applications.jobTitle, `%${search}%`)
         )!
       );
     }
