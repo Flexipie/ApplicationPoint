@@ -6,6 +6,7 @@ import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { DisconnectGmailButton } from '@/components/settings/disconnect-gmail-button';
 import { ConnectGmailButton } from '@/components/settings/connect-gmail-button';
+import { EmailScanner } from '@/components/settings/email-scanner';
 import { Mail, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -112,6 +113,9 @@ export default async function GeneralSettingsPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Email Scanner Section */}
+          <EmailScanner hasGmailConnected={isGmailConnected} />
 
           {/* User Profile Section */}
           <Card>
