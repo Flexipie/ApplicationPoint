@@ -137,7 +137,8 @@ export class SubscriptionService {
     const customerId = session.customer as string;
 
     // Fetch subscription details from Stripe
-    const stripeSubscription = await stripe.subscriptions.retrieve(subscription);
+    const response = await stripe.subscriptions.retrieve(subscription);
+    const stripeSubscription = response as any as Stripe.Subscription;
 
     // Update subscription in database
     await db
@@ -148,9 +149,9 @@ export class SubscriptionService {
         stripePriceId: stripeSubscription.items.data[0].price.id,
         plan,
         status: stripeSubscription.status as any,
-        currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
-        currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
-        cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
+        currentPeriodStart: new Date((stripeSubscription as any).current_period_start * 1000),
+        currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000),
+        cancelAtPeriodEnd: (stripeSubscription as any).cancel_at_period_end,
         updatedAt: new Date(),
       })
       .where(eq(subscriptions.userId, userId));
@@ -177,11 +178,11 @@ export class SubscriptionService {
       .update(subscriptions)
       .set({
         status: stripeSubscription.status as any,
-        currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
-        currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
-        cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
-        canceledAt: stripeSubscription.canceled_at
-          ? new Date(stripeSubscription.canceled_at * 1000)
+        currentPeriodStart: new Date((stripeSubscription as any).current_period_start * 1000),
+        currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000),
+        cancelAtPeriodEnd: (stripeSubscription as any).cancel_at_period_end,
+        canceledAt: (stripeSubscription as any).canceled_at
+          ? new Date((stripeSubscription as any).canceled_at * 1000)
           : null,
         updatedAt: new Date(),
       })
