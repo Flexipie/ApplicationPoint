@@ -50,11 +50,11 @@ export function PipelineHealthZone({
   sourceStats,
 }: PipelineHealthZoneProps) {
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-bold text-gray-900">Pipeline Health</h2>
+    <div className="rounded-lg border border-gray-200 bg-white p-4">
+      <h2 className="text-lg font-bold text-gray-900 mb-4">Pipeline Health</h2>
 
       {/* Funnel Mini-Cards */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-5 mb-4">
         <FunnelCard
           label="Saved"
           count={funnelStats.saved.current}

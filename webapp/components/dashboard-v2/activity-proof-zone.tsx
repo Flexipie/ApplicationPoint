@@ -1,6 +1,6 @@
 'use client';
 
-import { Mail, TrendingUp, Shield, ChevronRight } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -14,37 +14,19 @@ interface EmailEvent {
   applicationId?: string;
 }
 
-interface WeekWin {
-  type: 'interview' | 'offer' | 'assessment';
-  companyName: string;
-  jobTitle: string;
-  date: Date;
-}
-
-interface AccessLog {
-  timestamp: Date;
-  action: string;
-  ipAddress?: string;
-}
-
 interface ActivityProofZoneProps {
   recentEmailEvents: EmailEvent[];
-  weekWins: WeekWin[];
-  recentAccessLogs: AccessLog[];
 }
 
 export function ActivityProofZone({
   recentEmailEvents,
-  weekWins,
-  recentAccessLogs,
 }: ActivityProofZoneProps) {
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-bold text-gray-900">Activity & Proof</h2>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        {/* Recent Email Events */}
-        <div className="md:col-span-2">
+      {/* Recent Email Events - Full Width */}
+      <div>
           <div className="rounded-lg border border-gray-200 bg-white p-4">
             <div className="mb-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -89,7 +71,7 @@ export function ActivityProofZone({
                         <p className="mt-0.5 text-xs text-gray-600 line-clamp-1">
                           {event.subject || 'No subject'}
                         </p>
-                        <p className="mt-1.5 text-xs text-gray-500">{event.reason}</p>
+                        <p className="mt-1.5 text-xs text-gray-500 line-clamp-2">{event.reason}</p>
                       </div>
                       <span className="flex-shrink-0 text-xs text-gray-400">
                         {formatDistanceToNow(new Date(event.detectedAt), {
@@ -108,76 +90,6 @@ export function ActivityProofZone({
             )}
           </div>
         </div>
-
-        {/* This Week's Wins & Privacy Peek */}
-        <div className="space-y-4">
-          {/* This Week's Wins */}
-          <div className="rounded-lg border border-gray-200 bg-white p-4">
-            <div className="mb-3 flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-green-600" />
-              <h3 className="text-sm font-semibold text-gray-900">This Week&apos;s Wins</h3>
-            </div>
-
-            {weekWins.length === 0 ? (
-              <p className="text-xs text-gray-500">No wins yet this week</p>
-            ) : (
-              <div className="space-y-2">
-                {weekWins.map((win, index) => (
-                  <div
-                    key={index}
-                    className={`rounded-lg border p-2 ${getWinStyles(win.type)}`}
-                  >
-                    <p className="text-xs font-medium text-gray-900 line-clamp-1">
-                      {win.companyName}
-                    </p>
-                    <p className="mt-0.5 text-xs text-gray-600">{getWinLabel(win.type)}</p>
-                    <p className="mt-1 text-xs text-gray-500">
-                      {formatDistanceToNow(win.date, { addSuffix: true })}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Privacy/Trust Peek */}
-          <div className="rounded-lg border border-gray-200 bg-white p-4">
-            <div className="mb-3 flex items-center gap-2">
-              <Shield className="h-4 w-4 text-gray-600" />
-              <h3 className="text-sm font-semibold text-gray-900">Privacy & Trust</h3>
-            </div>
-
-            <div className="space-y-2">
-              <div className="rounded-lg border border-gray-100 bg-gray-50 p-2">
-                <p className="text-xs font-medium text-gray-900">Recent Access</p>
-                {recentAccessLogs.length > 0 ? (
-                  <p className="mt-1 text-xs text-gray-600">
-                    Last login: {formatDistanceToNow(recentAccessLogs[0].timestamp, { addSuffix: true })}
-                  </p>
-                ) : (
-                  <p className="mt-1 text-xs text-gray-600">No recent access</p>
-                )}
-              </div>
-
-              <Link
-                href="/settings/data"
-                className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 p-2 text-xs text-gray-700 transition-colors hover:border-gray-200 hover:bg-gray-100"
-              >
-                <span>View full access log</span>
-                <ChevronRight className="h-3 w-3" />
-              </Link>
-
-              <Link
-                href="/settings/data"
-                className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 p-2 text-xs text-gray-700 transition-colors hover:border-gray-200 hover:bg-gray-100"
-              >
-                <span>Export my data</span>
-                <ChevronRight className="h-3 w-3" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
@@ -204,22 +116,4 @@ function getEventTypeLabel(type: string): string {
     'follow_up': 'Follow-up',
   };
   return labels[type] || type.replace(/_/g, ' ');
-}
-
-function getWinStyles(type: 'interview' | 'offer' | 'assessment'): string {
-  const styles = {
-    interview: 'border-purple-200 bg-purple-50',
-    offer: 'border-green-200 bg-green-50',
-    assessment: 'border-amber-200 bg-amber-50',
-  };
-  return styles[type];
-}
-
-function getWinLabel(type: 'interview' | 'offer' | 'assessment'): string {
-  const labels = {
-    interview: 'Interview Scheduled',
-    offer: 'Offer Received',
-    assessment: 'Assessment Received',
-  };
-  return labels[type];
 }

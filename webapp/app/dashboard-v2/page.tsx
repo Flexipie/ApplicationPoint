@@ -228,39 +228,6 @@ export default async function DashboardV2Page() {
     applicationId: event.applicationId,
   }));
 
-  // Calculate this week's wins
-  const weekStart = startOfWeek(now);
-  const weekWins = userApplications
-    .filter((app) => {
-      const updated = new Date(app.updatedAt);
-      return (
-        updated >= weekStart &&
-        ['interview', 'offer', 'assessment'].includes(app.currentStatus)
-      );
-    })
-    .map((app) => {
-      let type: 'interview' | 'offer' | 'assessment' = 'assessment';
-      if (app.currentStatus === 'interview') type = 'interview';
-      if (app.currentStatus === 'offer') type = 'offer';
-
-      return {
-        type,
-        companyName: app.companyName,
-        jobTitle: app.jobTitle,
-        date: new Date(app.updatedAt),
-      };
-    })
-    .sort((a, b) => b.date.getTime() - a.date.getTime())
-    .slice(0, 3);
-
-  // Get recent access logs (placeholder - would need proper audit log table)
-  const recentAccessLogs = [
-    {
-      timestamp: now,
-      action: 'Login',
-      ipAddress: 'Current session',
-    },
-  ];
 
   return (
     <AppLayout>
@@ -307,8 +274,6 @@ export default async function DashboardV2Page() {
           {/* Zone 3: Activity & Proof */}
           <ActivityProofZone
             recentEmailEvents={recentEmailEvents}
-            weekWins={weekWins}
-            recentAccessLogs={recentAccessLogs}
           />
         </div>
       </div>

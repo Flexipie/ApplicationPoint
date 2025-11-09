@@ -185,21 +185,6 @@ export function TodayZone({
         )}
       </div>
 
-      {/* Quick Add */}
-      <div className="flex gap-2 mb-4">
-        <input
-          type="text"
-          value={newActionTitle}
-          onChange={(e) => setNewActionTitle(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleAddQuick()}
-          placeholder="+ Next action"
-          className="flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <Button size="sm" onClick={handleAddQuick} disabled={!newActionTitle.trim()}>
-          <Plus className="h-4 w-4" />
-        </Button>
-      </div>
-
       {/* CTA Chips */}
       {(showEmailCTA || showExtensionCTA) && (
         <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-200">
